@@ -36,6 +36,8 @@ public:
         initial_rho[2] = rho_eg;
         initial_rho[3] = rho_ion;
     }
+    void SetAbsErr(Double_t err){abs_err=err;};
+    void SetRelErr(Double_t err){rel_err=err;};
 
 
     complex<Double_t> GetRabiFreq(const Double_t t);  // in GHz
@@ -55,6 +57,8 @@ private:
     Double_t start_time;
     Double_t end_time;
     Double_t dt;
+    Double_t abs_err;
+    Double_t rel_err;
     LaserGenerator *laser_ptr;
     MuGenerator *Mu_ptr;
     RootManager *ROOT_ptr;

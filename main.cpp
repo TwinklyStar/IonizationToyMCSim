@@ -30,7 +30,9 @@ int main() {
 
     solver->SetStartTime(0);        // in ns
     solver->SetEndTime(10);         // in ns
-    solver->SetDt(0.001);            // in ns
+    solver->SetDt(0.01);            // in ns
+    solver->SetAbsErr(1e-8);
+    solver->SetRelErr(1e-6);
 
     int eventn = 10;
 //    parTestBench(eventn);

@@ -20,6 +20,8 @@ OBEsolver::OBEsolver(Double_t gm1, Double_t gmion):gamma_1(gm1), gamma_ion(gmion
     SetStartTime(0);
     SetEndTime(10);
     SetDt(0.01);
+    SetAbsErr(1e-8);
+    SetRelErr(1e-6);
 }
 
 void OBEsolver::UpdateGamma2() {
@@ -58,7 +60,8 @@ Double_t OBEsolver::GetDopplerShift() {
 }
 
 void OBEsolver::solve() {
-    runge_kutta_cash_karp54<state_type> stepper;
+    typedef runge_kutta_cash_karp54<state_type> stepper_type;
+    auto stepper = make_controlled(abs_err, rel_err, stepper_type());
 
     // Use std::bind to bind the system and observer to the class instance so that the function can be used as input parameters
     auto sys = std::bind(&OBEsolver::OBE, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
@@ -66,7 +69,7 @@ void OBEsolver::solve() {
 
     auto rho_temp = initial_rho;    // initial_rho will not change during integration
     // Perform integration
-    integrate_const(stepper, sys, rho_temp, start_time, end_time, dt, obs);
+    integrate_adaptive(stepper, sys, rho_temp, start_time, end_time, dt, obs);
 
 }
 
