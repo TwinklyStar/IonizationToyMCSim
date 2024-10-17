@@ -9,7 +9,7 @@ RootManager::RootManager(TString name): outfile_name(name){
     output_file = TFile::Open(name, "RECREATE");
     output_tree = new TTree("obe", "A tree storing parameters and time evolution of states");
 
-    output_tree->Branch("eventID", &eventID);
+    output_tree->Branch("EventID", &eventID);
     output_tree->Branch("x", &x);
     output_tree->Branch("y", &y);
     output_tree->Branch("z", &z);
@@ -17,6 +17,7 @@ RootManager::RootManager(TString name): outfile_name(name){
     output_tree->Branch("vy", &vy);
     output_tree->Branch("vz", &vz);
     output_tree->Branch("DoppFreq", &dopp_freq);
+    output_tree->Branch("Step_n", &step_n);
     output_tree->Branch("t", &t);
     output_tree->Branch("RabiFreq", &rabi_freq);
     output_tree->Branch("rho_gg", &rho_gg);
@@ -24,6 +25,9 @@ RootManager::RootManager(TString name): outfile_name(name){
     output_tree->Branch("rho_ge_r", &rho_ge_r);
     output_tree->Branch("rho_ge_i", &rho_ge_i);
     output_tree->Branch("rho_ion", &rho_ion);
+    output_tree->Branch("LastRho_gg", &last_rho_gg);
+    output_tree->Branch("LastRho_ee", &last_rho_ee);
+    output_tree->Branch("LastRho_ion", &last_rho_ion);
 };
 
 void RootManager::PushTimePoint(Double_t tt, Double_t trabi_freq, Double_t trho_gg, Double_t trho_ee,
@@ -38,6 +42,7 @@ void RootManager::PushTimePoint(Double_t tt, Double_t trabi_freq, Double_t trho_
 }
 
 void RootManager::FillEvent() {
+    step_n = t.size();
     output_tree->Fill();
     t.clear();
     rabi_freq.clear();

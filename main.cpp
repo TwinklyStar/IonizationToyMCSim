@@ -7,11 +7,12 @@
 // Meyer's Singleton Pattern
 LaserGenerator *lsr_ptr = &LaserGenerator::GetInstance();
 MuGenerator *Mu_ptr = &MuGenerator::GetInstance();
-RootManager *ROOT_ptr = &RootManager::GetInstance("OBEtest00.root");
+RootManager *ROOT_ptr = &RootManager::GetInstance("data/OBEtest00.root");
 OBEsolver *solver = new OBEsolver(0.627, 1.5);
 
 void parTestBench(int eventn);
 void SolveOBE(int eventn);
+void loader(int rate);
 
 int main() {
 
@@ -31,22 +32,25 @@ int main() {
     solver->SetStartTime(0);        // in ns
     solver->SetEndTime(10);         // in ns
     solver->SetDt(0.01);            // in ns
-    solver->SetAbsErr(1e-8);
-    solver->SetRelErr(1e-6);
+    solver->SetAbsErr(1e-6);
+    solver->SetRelErr(1e-3);
 
-    int eventn = 10;
+    int eventn = 10000;
+    std::cout << "--- Number of events: " << eventn << std::endl;
 //    parTestBench(eventn);
     SolveOBE(eventn);
 
 
 
-    std::cout << "Hello, World!" << std::endl;
+    std::cout << "\nHello, World!" << std::endl;
     return 0;
 }
 
 void SolveOBE(int eventn){
     solver->SetInitialState(1, 0, 0, 0);
     for(int i=0; i<eventn; i++){
+        if (eventn >= 100 && i % (eventn/100) == 0) loader(i/(eventn/100));
+
         solver->SetMuPosition(Mu_ptr->SampleLocation());
         solver->SetMuVelocity(Mu_ptr->SampleVelocity());
 
@@ -56,6 +60,7 @@ void SolveOBE(int eventn){
         ROOT_ptr->SetDoppFreq(solver->GetDopplerShift());
         ROOT_ptr->SetPosition(solver->GetMuPosition());
         ROOT_ptr->SetVelocity(solver->GetMuVelocity());
+        ROOT_ptr->SetLastState();
 
         ROOT_ptr->FillEvent();
     }
@@ -81,6 +86,8 @@ void parTestBench(int eventn) {
     t1->Branch("rabi", &t_rabi);    // at t=0
 
     for (i = 0; i < eventn; i++) {
+        if (eventn >= 100 && i % (eventn/100) == 0) loader(i/(eventn/100));
+
         solver->SetMuPosition(Mu_ptr->SampleLocation());
         solver->SetMuVelocity(Mu_ptr->SampleVelocity());
         t_pos_x = solver->GetMuPosition().X();
@@ -111,4 +118,19 @@ void parTestBench(int eventn) {
 
 
     ff->Write();
+}
+
+// Progress bar
+void loader(int rate)
+{
+    char proc[22];
+    memset(proc, '\0', sizeof(proc));
+
+    for (int i = 0; i < rate/5; i++)
+    {
+        proc[i] = '#';
+    }
+
+    printf("\r[%-20s] [%d%%]", proc, rate);        //C语言格式控制时默认右对齐，所以要在前面加-变成左对齐
+    fflush(stdout);                                 //刷新屏幕打印
 }

@@ -22,6 +22,7 @@ public:
     void PushTimePoint(Double_t tt, Double_t trabi_freq,
                        Double_t trho_gg, Double_t trho_ee,
                        Double_t trho_ge_r, Double_t trho_ge_i, Double_t trho_ion);
+    void SetLastState(){last_rho_gg=rho_gg.back(); last_rho_ee=rho_ee.back(); last_rho_ion=rho_ion.back();};
     void FillEvent();
 
     void Finalize(){output_file->Write(); output_file->Close();};
@@ -44,6 +45,7 @@ private:
     Double_t vy;
     Double_t vz;
     Double_t dopp_freq;
+    Int_t step_n;
     std::vector<Double_t> t;
     std::vector<Double_t> rabi_freq;
     std::vector<Double_t> E_field;
@@ -52,6 +54,9 @@ private:
     std::vector<Double_t> rho_ge_r;
     std::vector<Double_t> rho_ge_i;
     std::vector<Double_t> rho_ion;
+    Double_t last_rho_gg;
+    Double_t last_rho_ee;
+    Double_t last_rho_ion;
 
 
 };
