@@ -30,6 +30,7 @@ include_directories(include)
 file(GLOB SOURCES src/*.cpp main.cpp)
 file(GLOB HEADERS include/*.h)
 
-add_executable(IonizationToyMCSim ${SOURCES} ${HEADERS})
+add_executable(IonizationToyMCSim ${SOURCES} ${HEADERS}
+        run/drawDopp_E_rho.cpp)
 add_executable(TestHarmonic test/harmonic_oscillator.cpp)
 

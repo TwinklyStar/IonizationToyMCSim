@@ -41,10 +41,10 @@ void OBEsolver::OBE(const state_type &rho, state_type &drhodt, const Double_t t)
     Double_t delta_t = GetDopplerShift();
 
     // Equations based on the system provided
-    drhodt[0] = gamma_1 * rho_ee + (complex<Double_t>(0.0, 0.5)) * (conj(Omega_t) * rho_ge - Omega_t * rho_eg);
-    drhodt[1] = -(gamma_1 + gamma_ion) * rho_ee - (complex<Double_t>(0.0, 0.5)) * (conj(Omega_t) * rho_ge - Omega_t * rho_eg);
+    drhodt[0] = gamma_1 * rho_ee + (complex<Double_t>(0.0, 0.5)) * (conj(Omega_t) * rho_eg - Omega_t * rho_ge);
+    drhodt[1] = -(gamma_1 + gamma_ion) * rho_ee - (complex<Double_t>(0.0, 0.5)) * (conj(Omega_t) * rho_eg - Omega_t * rho_ge);
     drhodt[2] = -(gamma_2 + complex<Double_t>(0.0, 1.0) * delta_t + gamma_ion / 2.0) * rho_ge
-                + (complex<Double_t>(0.0, 0.5)) * Omega_t * (rho_gg - rho_ee);
+                + (complex<Double_t>(0.0, 0.5)) * conj(Omega_t) * (rho_ee - rho_gg);
     drhodt[3] = gamma_ion * rho_ee; // dρ_ion/dt
 }
 
@@ -55,7 +55,8 @@ complex<Double_t> OBEsolver::GetRabiFreq(const Double_t t) {
 }
 
 Double_t OBEsolver::GetDopplerShift() {
-    return -Mu_v.Dot(laser_ptr->GetWaveVector())*1e-9;
+    return 0;
+//    return -Mu_v.Dot(laser_ptr->GetWaveVector())*1e-9;
 
 }
 
@@ -75,7 +76,7 @@ void OBEsolver::solve() {
 
 void OBEsolver::Observer(const state_type &rho, Double_t t) {
 //    std::cout << rho[0].real() << " ";
-    ROOT_ptr->PushTimePoint(t, GetRabiFreq(t).real(),
+    ROOT_ptr->PushTimePoint(t, laser_ptr->GetFieldE(Mu_pos, t).Mag(), GetRabiFreq(t).real(),
                             rho[0].real(), rho[1].real(),
                             rho[2].real(), rho[2].imag(), rho[3].real());
 }

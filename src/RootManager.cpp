@@ -17,9 +17,11 @@ RootManager::RootManager(TString name): outfile_name(name){
     output_tree->Branch("vy", &vy);
     output_tree->Branch("vz", &vz);
     output_tree->Branch("DoppFreq", &dopp_freq);
+    output_tree->Branch("PeakE", &peak_E);
     output_tree->Branch("Step_n", &step_n);
     output_tree->Branch("t", &t);
     output_tree->Branch("RabiFreq", &rabi_freq);
+    output_tree->Branch("EField", &E_field);
     output_tree->Branch("rho_gg", &rho_gg);
     output_tree->Branch("rho_ee", &rho_ee);
     output_tree->Branch("rho_ge_r", &rho_ge_r);
@@ -30,9 +32,10 @@ RootManager::RootManager(TString name): outfile_name(name){
     output_tree->Branch("LastRho_ion", &last_rho_ion);
 };
 
-void RootManager::PushTimePoint(Double_t tt, Double_t trabi_freq, Double_t trho_gg, Double_t trho_ee,
+void RootManager::PushTimePoint(Double_t tt, Double_t tE_field, Double_t trabi_freq, Double_t trho_gg, Double_t trho_ee,
                                 Double_t trho_ge_r, Double_t trho_ge_i, Double_t trho_ion) {
     t.push_back(tt);
+    E_field.push_back(tE_field);
     rabi_freq.push_back(trabi_freq);
     rho_gg.push_back(trho_gg);
     rho_ee.push_back(trho_ee);
@@ -43,6 +46,7 @@ void RootManager::PushTimePoint(Double_t tt, Double_t trabi_freq, Double_t trho_
 
 void RootManager::FillEvent() {
     step_n = t.size();
+    peak_E = *std::max_element(E_field.begin(), E_field.end());
     output_tree->Fill();
     t.clear();
     rabi_freq.clear();

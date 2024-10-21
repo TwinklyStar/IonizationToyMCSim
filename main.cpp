@@ -7,7 +7,7 @@
 // Meyer's Singleton Pattern
 LaserGenerator *lsr_ptr = &LaserGenerator::GetInstance();
 MuGenerator *Mu_ptr = &MuGenerator::GetInstance();
-RootManager *ROOT_ptr = &RootManager::GetInstance("data/OBEtest00.root");
+RootManager *ROOT_ptr = &RootManager::GetInstance("data/OBEtest01.root");
 OBEsolver *solver = new OBEsolver(0.627, 1.5);
 
 void parTestBench(int eventn);
@@ -21,6 +21,7 @@ int main() {
     lsr_ptr->SetSigmaY(1);          // in mm
     lsr_ptr->SetPulseTimeWidth(1);  // in ns
     lsr_ptr->SetEnergy(10e-6);      // in J
+//    lsr_ptr->SetEnergy(0);      // in J
     lsr_ptr->SetLinewidth(8);       // in GHz
     lsr_ptr->SetWaveLength(122);  // in nm
     lsr_ptr->SetLaserDirection({1, 0, 0});  // vector direction
@@ -39,8 +40,6 @@ int main() {
     std::cout << "--- Number of events: " << eventn << std::endl;
 //    parTestBench(eventn);
     SolveOBE(eventn);
-
-
 
     std::cout << "\nHello, World!" << std::endl;
     return 0;

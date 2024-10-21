@@ -19,7 +19,7 @@ public:
     void SetPosition(TVector3 r){x=r.X(); y=r.Y(); z=r.Z();};
     void SetVelocity(TVector3 v){vx=v.X(); vy=v.Y(); vz=v.Z();};
     void SetDoppFreq(Double_t freq){dopp_freq=freq;};
-    void PushTimePoint(Double_t tt, Double_t trabi_freq,
+    void PushTimePoint(Double_t tt, Double_t tE_field, Double_t trabi_freq,
                        Double_t trho_gg, Double_t trho_ee,
                        Double_t trho_ge_r, Double_t trho_ge_i, Double_t trho_ion);
     void SetLastState(){last_rho_gg=rho_gg.back(); last_rho_ee=rho_ee.back(); last_rho_ion=rho_ion.back();};
@@ -45,6 +45,7 @@ private:
     Double_t vy;
     Double_t vz;
     Double_t dopp_freq;
+    Double_t peak_E;
     Int_t step_n;
     std::vector<Double_t> t;
     std::vector<Double_t> rabi_freq;
