@@ -55,8 +55,8 @@ complex<Double_t> OBEsolver::GetRabiFreq(const Double_t t) {
 }
 
 Double_t OBEsolver::GetDopplerShift() {
-    return 0;
-//    return -Mu_v.Dot(laser_ptr->GetWaveVector())*1e-9;
+//    return 0;
+    return -Mu_v.Dot(laser_ptr->GetWaveVector())*1e-9;
 
 }
 
