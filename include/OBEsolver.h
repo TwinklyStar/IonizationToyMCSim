@@ -38,6 +38,7 @@ public:
     }
     void SetAbsErr(Double_t err){abs_err=err;};
     void SetRelErr(Double_t err){rel_err=err;};
+    void SetDopplerShift(Double_t shift){detuning=shift; if_set_dopp= true;};
 
 
     complex<Double_t> GetRabiFreq(const Double_t t);  // in GHz
@@ -64,6 +65,9 @@ private:
     RootManager *ROOT_ptr;
     TVector3 Mu_pos;
     TVector3 Mu_v;
+
+    bool if_set_dopp=false;
+    Double_t detuning=0;
 
     state_type initial_rho; // rho_ee, gg, eg, ion
 

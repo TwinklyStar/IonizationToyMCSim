@@ -3,6 +3,7 @@
 //
 
 #include "LaserGenerator.h"
+#include "OBEsolver.h"
 
 // Meyers' Singleton implementation
 LaserGenerator& LaserGenerator::GetInstance() {
@@ -27,6 +28,22 @@ TVector3 LaserGenerator::GetFieldE(TVector3 r, Double_t t) {
 
     // Combine everything to compute the electric field
     double E = prefactor * exp_space * exp_time;
+//    double E = prefactor * exp_space;
 
     return {0, E, 0};   // x-polarized in muonium coordinate
+}
+
+void LaserGenerator::SetLinewidth(Double_t l) {
+    linewidth=l;
+    if (obe_ptr == nullptr)
+        std::cout << "WARNING: LaserGenerator: Gamma2 is not updated because no OBE solver is created" << std::endl;
+    else
+        obe_ptr->UpdateGamma2();
+}
+
+Double_t LaserGenerator::GetPeakIntensity(TVector3 r) {
+    const Double_t eta = 376.7303134;
+    Double_t prefactor = sqrt(2.0 * sqrt(2.0) * eta * energy / (pow(TMath::Pi(), 3.0 / 2.0) * sigma_x * sigma_y  * tau *
+                                                                pow(10, -9)));      // convert ns to s
+    return pow(prefactor, 2)/(2*eta)*100;
 }

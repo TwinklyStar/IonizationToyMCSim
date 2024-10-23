@@ -16,6 +16,7 @@ TVector3 MuGenerator::SampleVelocity() {
     return {randGen.Gaus(0, v_thermal),
             randGen.Gaus(0, v_thermal),
             randGen.Gaus(0, v_thermal)};
+//    return {0, 0, 0};
 }
 
 TVector3 MuGenerator::SampleLocation() {
@@ -23,8 +24,8 @@ TVector3 MuGenerator::SampleLocation() {
     // And laser field in z direction is uniform. We simply set z as 0
     LaserGenerator &lsr = LaserGenerator::GetInstance();
 
-    return {0,
-            randGen.Uniform(-3*lsr.GetSigmaX(), 3*lsr.GetSigmaX()),
-            randGen.Uniform(-3*lsr.GetSigmaY(), 3*lsr.GetSigmaY())};
-//    return {0,0,0};
+//    return {0,
+//            randGen.Uniform(-3*lsr.GetSigmaX(), 3*lsr.GetSigmaX()),
+//            randGen.Uniform(-3*lsr.GetSigmaY(), 3*lsr.GetSigmaY())};
+    return {0,0,0};
 }

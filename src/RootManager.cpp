@@ -16,8 +16,12 @@ RootManager::RootManager(TString name): outfile_name(name){
     output_tree->Branch("vx", &vx);
     output_tree->Branch("vy", &vy);
     output_tree->Branch("vz", &vz);
+    output_tree->Branch("LineWidth", &linewidth);
+    output_tree->Branch("LaserSigmaT", &laser_sigmat);
+    output_tree->Branch("LaserSigmaX", &laser_sigmax);
+    output_tree->Branch("LaserSigmaY", &laser_sigmay);
+    output_tree->Branch("PeakIntensity", &peak_intensity);
     output_tree->Branch("DoppFreq", &dopp_freq);
-    output_tree->Branch("PeakE", &peak_E);
     output_tree->Branch("Step_n", &step_n);
     output_tree->Branch("t", &t);
     output_tree->Branch("RabiFreq", &rabi_freq);
@@ -44,9 +48,18 @@ void RootManager::PushTimePoint(Double_t tt, Double_t tE_field, Double_t trabi_f
     rho_ion.push_back(trho_ion);
 }
 
+void RootManager::SetLaserPars(Double_t E, Double_t sigmat, Double_t sigmax, Double_t sigmay, Double_t intensity,
+                               Double_t linw) {
+    pulse_energy = E;
+    laser_sigmat = sigmat;
+    laser_sigmax = sigmax;
+    laser_sigmay = sigmay;
+    peak_intensity = intensity;
+    linewidth = linw;
+}
+
 void RootManager::FillEvent() {
     step_n = t.size();
-    peak_E = *std::max_element(E_field.begin(), E_field.end());
     output_tree->Fill();
     t.clear();
     rabi_freq.clear();

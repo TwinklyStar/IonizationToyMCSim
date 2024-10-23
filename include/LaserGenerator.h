@@ -6,6 +6,8 @@
 #define LASERTOYMC_LASERGENERATOR_H
 #include "common.h"
 
+class OBEsolver;    // Two classes cannot include each other
+
 class LaserGenerator {
 public:
     // Meyers' Singleton - Get the instance of the class
@@ -16,7 +18,7 @@ public:
     LaserGenerator& operator=(const LaserGenerator&) = delete;
 
     void SetEnergy(Double_t E){energy=E;};  // in J
-    void SetLinewidth(Double_t l){linewidth=l;};    // in GHz
+    void SetLinewidth(Double_t l);    // in GHz
     void SetSigmaX(Double_t x){sigma_x=x;}; // in mm
     void SetSigmaY(Double_t y){sigma_y=y;}; // in mm
     void SetPulseTimeWidth(Double_t p){tau=p;}; // in ns
@@ -26,21 +28,25 @@ public:
     void SetLaserDirection(TVector3 k){k_dirc=k.Unit();};
     void SetPeakTime(Double_t t){peak_time=t;};
 
+    void SetOBESolverPtr(OBEsolver *ptr){obe_ptr=ptr;};
+
     Double_t GetEnergy(){return energy;};
     Double_t GetLinewidth(){return linewidth;};
     Double_t GetSigmaX(){return sigma_x;};
     Double_t GetSigmaY(){return sigma_y;};
     Double_t GetPulseTimeWidth(){return tau;};
     Double_t GetLaserPosition(){return laser_z;};
+    Double_t GetPeakIntensity(TVector3 r);
     TVector3 GetWaveVector(){return laser_k*k_dirc;};   // in m^-1
 
     TVector3 GetFieldE(TVector3 r, Double_t t); // in V/mm
 
 private:
     // Private constructor and destructor
-    LaserGenerator(){peak_time=0;};
+    LaserGenerator(){peak_time=0; obe_ptr=nullptr;};
     ~LaserGenerator(){};
 
+    OBEsolver *obe_ptr;
 
     Double_t energy;
     Double_t linewidth;

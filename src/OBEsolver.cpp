@@ -7,7 +7,7 @@
 OBEsolver::OBEsolver(Double_t gm1, Double_t gmion):gamma_1(gm1), gamma_ion(gmion)
 {
     laser_ptr = &LaserGenerator::GetInstance();
-//    laser_ptr->SetOBESolverPtr(this);
+    laser_ptr->SetOBESolverPtr(this);
     Mu_ptr = &MuGenerator::GetInstance();
     ROOT_ptr = &RootManager::GetInstance();
 
@@ -55,8 +55,10 @@ complex<Double_t> OBEsolver::GetRabiFreq(const Double_t t) {
 }
 
 Double_t OBEsolver::GetDopplerShift() {
-//    return 0;
-    return -Mu_v.Dot(laser_ptr->GetWaveVector())*1e-9;
+    if (!if_set_dopp)
+        return -Mu_v.Dot(laser_ptr->GetWaveVector())*1e-9;
+    else
+        return detuning;
 
 }
 

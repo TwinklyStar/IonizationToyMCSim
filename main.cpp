@@ -7,7 +7,7 @@
 // Meyer's Singleton Pattern
 LaserGenerator *lsr_ptr = &LaserGenerator::GetInstance();
 MuGenerator *Mu_ptr = &MuGenerator::GetInstance();
-RootManager *ROOT_ptr = &RootManager::GetInstance("data/OBEtest01.root");
+RootManager *ROOT_ptr = &RootManager::GetInstance("data/OBEtest13.root");
 OBEsolver *solver = new OBEsolver(0.627, 1.5);
 
 void parTestBench(int eventn);
@@ -32,9 +32,9 @@ int main() {
 
     solver->SetStartTime(0);        // in ns
     solver->SetEndTime(10);         // in ns
-    solver->SetDt(0.01);            // in ns
-    solver->SetAbsErr(1e-6);
-    solver->SetRelErr(1e-3);
+    solver->SetDt(0.001);            // in ns
+    solver->SetAbsErr(1e-8);
+    solver->SetRelErr(1e-6);
 
     int eventn = 10000;
     std::cout << "--- Number of events: " << eventn << std::endl;
@@ -50,12 +50,26 @@ void SolveOBE(int eventn){
     for(int i=0; i<eventn; i++){
         if (eventn >= 100 && i % (eventn/100) == 0) loader(i/(eventn/100));
 
+        Double_t linewidth_arr[100];
+        Double_t dopp_arr[100];
+        for (int j=0; j<100; j++){
+            linewidth_arr[j] = j;
+            dopp_arr[j] = -1000 + j*2000/100.;
+        }
+        lsr_ptr->SetEnergy(10e-6);
         solver->SetMuPosition(Mu_ptr->SampleLocation());
         solver->SetMuVelocity(Mu_ptr->SampleVelocity());
+
+        lsr_ptr->SetLinewidth(linewidth_arr[i%100]);
+        solver->SetDopplerShift(dopp_arr[i/100]);
 
         solver->solve();
 
         ROOT_ptr->SetEventID(i);
+        ROOT_ptr->SetLaserPars(lsr_ptr->GetEnergy(), lsr_ptr->GetPulseTimeWidth(),
+                               lsr_ptr->GetSigmaX(), lsr_ptr->GetSigmaY(),
+                               lsr_ptr->GetPeakIntensity(solver->GetMuPosition()),
+                               lsr_ptr->GetLinewidth());
         ROOT_ptr->SetDoppFreq(solver->GetDopplerShift());
         ROOT_ptr->SetPosition(solver->GetMuPosition());
         ROOT_ptr->SetVelocity(solver->GetMuVelocity());
