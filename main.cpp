@@ -7,7 +7,7 @@
 // Meyer's Singleton Pattern
 LaserGenerator *lsr_ptr = &LaserGenerator::GetInstance();
 MuGenerator *Mu_ptr = &MuGenerator::GetInstance();
-RootManager *ROOT_ptr = &RootManager::GetInstance("data/OBEtest17.root");
+RootManager *ROOT_ptr = &RootManager::GetInstance("data/OBEtest20.root");
 OBEsolver *solver = new OBEsolver(0.627, 1.5);
 
 void parTestBench(int eventn);
@@ -16,7 +16,7 @@ void loader(int rate);
 
 int main() {
 
-    lsr_ptr->SetLaserPosition(0);
+    lsr_ptr->SetLaserPosition(3);
     lsr_ptr->SetSigmaX(4);          // in mm
     lsr_ptr->SetSigmaY(1);          // in mm
     lsr_ptr->SetPulseTimeWidth(1);  // in ns
@@ -29,6 +29,7 @@ int main() {
 
     Mu_ptr->SetRndSeed(999);
     Mu_ptr->SetTemperature(322);
+    Mu_ptr->ReadInputFile("../datasets/test1k.dat");
 
     solver->SetStartTime(0);        // in ns
     solver->SetEndTime(10);         // in ns
@@ -36,7 +37,8 @@ int main() {
     solver->SetAbsErr(1e-8);
     solver->SetRelErr(1e-6);
 
-    int eventn = 10000;
+//    int eventn = 10000;
+    int eventn = Mu_ptr->GetInputEventNum();
     std::cout << "--- Number of events: " << eventn << std::endl;
 //    parTestBench(eventn);
     SolveOBE(eventn);
@@ -50,21 +52,23 @@ void SolveOBE(int eventn){
     for(int i=0; i<eventn; i++){
         if (eventn >= 100 && i % (eventn/100) == 0) loader(i/(eventn/100));
 
-        Double_t linewidth_arr[100];
-        Double_t dopp_arr[100];
-        for (int j=0; j<100; j++){
-            linewidth_arr[j] = j;
-            dopp_arr[j] = -100 + j*200/100.;
-        }
-        lsr_ptr->SetEnergy(10e-9 * (i%100));
+//        Double_t linewidth_arr[100];
+//        Double_t dopp_arr[100];
+//        for (int j=0; j<100; j++){
+//            linewidth_arr[j] = j;
+//            dopp_arr[j] = -100 + j*200/100.;
+//        }
+        lsr_ptr->SetEnergy(10e-6);
 //        solver->SetMuPosition(Mu_ptr->SampleLocation());
 //        solver->SetMuVelocity(Mu_ptr->SampleVelocity());
-        solver->SetMuPosition({0,0,0});
-        solver->SetMuVelocity({0,0,0});
+//        solver->SetMuPosition({0,0,0});
+//        solver->SetMuVelocity({0,0,0});
+        solver->SetMuPosition(Mu_ptr->GetInputLocation(i));
+        solver->SetMuVelocity(Mu_ptr->GetInputVelocity(i));
 
 //        lsr_ptr->SetLinewidth(linewidth_arr[i%100]);
-        lsr_ptr->SetLinewidth(0);
-        solver->SetDopplerShift(dopp_arr[i/100]);
+        lsr_ptr->SetLinewidth(80);
+//        solver->SetDopplerShift(dopp_arr[i/100]);
 
         solver->solve();
 

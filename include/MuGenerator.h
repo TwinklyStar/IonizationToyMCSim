@@ -6,6 +6,12 @@
 #define LASERTOYMC_MUGENERATOR_H
 #include "common.h"
 #include "LaserGenerator.h"
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <string>
+#include <sstream>
+
 
 class MuGenerator {
 public:
@@ -18,6 +24,10 @@ public:
 
     void SetTemperature(Double_t temp){temperature=temp;}; // in Kelvin
 
+    void ReadInputFile(std::string infile);
+
+    int GetInputEventNum(){return input_n;};
+
     Double_t GetTemperature(){return temperature;}; // in Kelvin
 
     void SetRndSeed(UInt_t rndseed){randGen.SetSeed(rndseed);};
@@ -25,6 +35,9 @@ public:
     TVector3 SampleVelocity();  // in m/s
 
     TVector3 SampleLocation();  // in mm
+
+    TVector3 GetInputLocation(int i);   // in mm
+    TVector3 GetInputVelocity(int i);   // in m/s
 
 
 private:
@@ -37,6 +50,14 @@ private:
 
     const Double_t k_B = 1.380649e-23; // Boltzmann constant in J/K
     const Double_t m_Mu = 1.8926410106e-28;  // Muonium mass in kg
+
+    int input_n=0;
+    std::vector<Double_t> input_x;
+    std::vector<Double_t> input_y;
+    std::vector<Double_t> input_z;
+    std::vector<Double_t> input_vx;
+    std::vector<Double_t> input_vy;
+    std::vector<Double_t> input_vz;
 
 };
 
