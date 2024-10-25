@@ -7,7 +7,7 @@
 // Meyer's Singleton Pattern
 LaserGenerator *lsr_ptr = &LaserGenerator::GetInstance();
 MuGenerator *Mu_ptr = &MuGenerator::GetInstance();
-RootManager *ROOT_ptr = &RootManager::GetInstance("data/OBEtest13.root");
+RootManager *ROOT_ptr = &RootManager::GetInstance("data/OBEtest17.root");
 OBEsolver *solver = new OBEsolver(0.627, 1.5);
 
 void parTestBench(int eventn);
@@ -54,13 +54,16 @@ void SolveOBE(int eventn){
         Double_t dopp_arr[100];
         for (int j=0; j<100; j++){
             linewidth_arr[j] = j;
-            dopp_arr[j] = -1000 + j*2000/100.;
+            dopp_arr[j] = -100 + j*200/100.;
         }
-        lsr_ptr->SetEnergy(10e-6);
-        solver->SetMuPosition(Mu_ptr->SampleLocation());
-        solver->SetMuVelocity(Mu_ptr->SampleVelocity());
+        lsr_ptr->SetEnergy(10e-9 * (i%100));
+//        solver->SetMuPosition(Mu_ptr->SampleLocation());
+//        solver->SetMuVelocity(Mu_ptr->SampleVelocity());
+        solver->SetMuPosition({0,0,0});
+        solver->SetMuVelocity({0,0,0});
 
-        lsr_ptr->SetLinewidth(linewidth_arr[i%100]);
+//        lsr_ptr->SetLinewidth(linewidth_arr[i%100]);
+        lsr_ptr->SetLinewidth(0);
         solver->SetDopplerShift(dopp_arr[i/100]);
 
         solver->solve();

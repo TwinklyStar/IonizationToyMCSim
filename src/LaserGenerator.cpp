@@ -42,8 +42,17 @@ void LaserGenerator::SetLinewidth(Double_t l) {
 }
 
 Double_t LaserGenerator::GetPeakIntensity(TVector3 r) {
+    Double_t x = r.Y(); // simple version
+    Double_t y = r.Z() - laser_z; // simple version
+    Double_t z = r.X(); // simple version
     const Double_t eta = 376.7303134;
+
     Double_t prefactor = sqrt(2.0 * sqrt(2.0) * eta * energy / (pow(TMath::Pi(), 3.0 / 2.0) * sigma_x * sigma_y  * tau *
                                                                 pow(10, -9)));      // convert ns to s
-    return pow(prefactor, 2)/(2*eta)*100;
+    // Compute the spatial Gaussian components
+    double exp_space = exp(-(x * x) / (sigma_x * sigma_x) - (y * y) / (sigma_y * sigma_y));
+
+    double E = prefactor * exp_space;
+
+    return pow(E, 2)/(2*eta)*100;
 }

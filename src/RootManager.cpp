@@ -16,6 +16,7 @@ RootManager::RootManager(TString name): outfile_name(name){
     output_tree->Branch("vx", &vx);
     output_tree->Branch("vy", &vy);
     output_tree->Branch("vz", &vz);
+    output_tree->Branch("PulseEnergy", &pulse_energy);
     output_tree->Branch("LineWidth", &linewidth);
     output_tree->Branch("LaserSigmaT", &laser_sigmat);
     output_tree->Branch("LaserSigmaX", &laser_sigmax);
