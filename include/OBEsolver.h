@@ -17,14 +17,12 @@ typedef vector<complex<Double_t>> state_type;
 
 class OBEsolver {
 public:
-    OBEsolver(Double_t gm1, Double_t gmion);
+    OBEsolver(Double_t gm1);
     ~OBEsolver(){};
 
     void solve();
 
-    void SetGamma1(Double_t gm1){gamma_1=gm1; UpdateGamma2();}
-    void SetGammaIon(Double_t gmion){gamma_ion=gmion; UpdateGamma2();}
-    void UpdateGamma2();
+    void SetGamma1(Double_t gm1){gamma_1=gm1;}
     void SetStartTime(Double_t t){start_time=t;};
     void SetEndTime(Double_t t){end_time=t;};
     void SetDt(Double_t t){dt=t;};
@@ -45,16 +43,15 @@ public:
     Double_t GetDopplerShift();
 
     Double_t GetGamma1(){return gamma_1;}
-    Double_t GetGamma2(){return gamma_2;}
-    Double_t GetGammaIon(){return gamma_ion;}
+//    Double_t GetGamma2(){return gamma_2;}
+    Double_t GetGammaIon(Double_t t);
     TVector3 GetMuPosition(){return Mu_pos;}
     TVector3 GetMuVelocity(){return Mu_v;}
 
 
 private:
     Double_t gamma_1;
-    Double_t gamma_2;
-    Double_t gamma_ion;
+//    Double_t gamma_2;
     Double_t start_time;
     Double_t end_time;
     Double_t dt;

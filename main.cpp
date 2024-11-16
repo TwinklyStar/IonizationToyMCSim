@@ -7,8 +7,8 @@
 // Meyer's Singleton Pattern
 LaserGenerator *lsr_ptr = &LaserGenerator::GetInstance();
 MuGenerator *Mu_ptr = &MuGenerator::GetInstance();
-RootManager *ROOT_ptr = &RootManager::GetInstance("data/OBEtest20.root");
-OBEsolver *solver = new OBEsolver(0.627, 1.5);
+RootManager *ROOT_ptr = &RootManager::GetInstance("data/OBEtest22.root");
+OBEsolver *solver = new OBEsolver(0.627);
 
 void parTestBench(int eventn);
 void SolveOBE(int eventn);
@@ -16,13 +16,15 @@ void loader(int rate);
 
 int main() {
 
-    lsr_ptr->SetLaserPosition(3);
-    lsr_ptr->SetSigmaX(4);          // in mm
-    lsr_ptr->SetSigmaY(1);          // in mm
-    lsr_ptr->SetPulseTimeWidth(1);  // in ns
-    lsr_ptr->SetEnergy(10e-6);      // in J
+    lsr_ptr->SetLaserPosition(3.3);
+    lsr_ptr->SetSigmaX(23);          // in mm
+    lsr_ptr->SetSigmaY(2.3);          // in mm
+//    lsr_ptr->SetPulseTimeWidth(1);  // in ns
+    lsr_ptr->SetPulseFWHM(2);       // in ns
+    lsr_ptr->SetEnergy(100e-6);      // in J
+    lsr_ptr->SetEnergy355(0.3);     // in J
 //    lsr_ptr->SetEnergy(0);      // in J
-    lsr_ptr->SetLinewidth(8);       // in GHz
+    lsr_ptr->SetLinewidth(80);       // in GHz
     lsr_ptr->SetWaveLength(122);  // in nm
     lsr_ptr->SetLaserDirection({1, 0, 0});  // vector direction
     lsr_ptr->SetPeakTime(5);        // in ns
@@ -31,24 +33,53 @@ int main() {
     Mu_ptr->SetTemperature(322);
     Mu_ptr->ReadInputFile("../datasets/test1k.dat");
 
+    ROOT_ptr->SetRndSeed(1000); // A different seed from Mu_ptr
+
     solver->SetStartTime(0);        // in ns
     solver->SetEndTime(10);         // in ns
     solver->SetDt(0.001);            // in ns
     solver->SetAbsErr(1e-8);
     solver->SetRelErr(1e-6);
+    solver->SetInitialState(1, 0, 0, 0);
 
 //    int eventn = 10000;
     int eventn = Mu_ptr->GetInputEventNum();
     std::cout << "--- Number of events: " << eventn << std::endl;
 //    parTestBench(eventn);
     SolveOBE(eventn);
+//    SolveOBE(10);
 
     std::cout << "\nHello, World!" << std::endl;
     return 0;
 }
 
 void SolveOBE(int eventn){
-    solver->SetInitialState(1, 0, 0, 0);
+    for(int i=0; i<eventn; i++){
+        if (eventn >= 100 && i % (eventn/100) == 0) loader(i/(eventn/100));
+
+        solver->SetMuPosition(Mu_ptr->GetInputLocation(i));
+        solver->SetMuVelocity(Mu_ptr->GetInputVelocity(i));
+
+        solver->solve();
+
+        ROOT_ptr->SetEventID(i);
+        ROOT_ptr->SetLaserPars(lsr_ptr->GetEnergy(), lsr_ptr->GetEnergy355(), lsr_ptr->GetPulseTimeWidth(),
+                               lsr_ptr->GetSigmaX(), lsr_ptr->GetSigmaY(),
+                               lsr_ptr->GetPeakIntensity(solver->GetMuPosition()),
+                               lsr_ptr->GetPeakIntensity355(solver->GetMuPosition()), lsr_ptr->GetLinewidth());
+        ROOT_ptr->SetDoppFreq(solver->GetDopplerShift());
+        ROOT_ptr->SetPosition(solver->GetMuPosition());
+        ROOT_ptr->SetVelocity(solver->GetMuVelocity());
+        ROOT_ptr->SetLastState();
+
+        ROOT_ptr->FillEvent();
+    }
+
+    ROOT_ptr->Finalize();
+
+}
+
+void SolveOBETest(int eventn){
     for(int i=0; i<eventn; i++){
         if (eventn >= 100 && i % (eventn/100) == 0) loader(i/(eventn/100));
 
@@ -73,10 +104,10 @@ void SolveOBE(int eventn){
         solver->solve();
 
         ROOT_ptr->SetEventID(i);
-        ROOT_ptr->SetLaserPars(lsr_ptr->GetEnergy(), lsr_ptr->GetPulseTimeWidth(),
+        ROOT_ptr->SetLaserPars(lsr_ptr->GetEnergy(), lsr_ptr->GetEnergy355(), lsr_ptr->GetPulseTimeWidth(),
                                lsr_ptr->GetSigmaX(), lsr_ptr->GetSigmaY(),
                                lsr_ptr->GetPeakIntensity(solver->GetMuPosition()),
-                               lsr_ptr->GetLinewidth());
+                               lsr_ptr->GetPeakIntensity355(solver->GetMuPosition()), lsr_ptr->GetLinewidth());
         ROOT_ptr->SetDoppFreq(solver->GetDopplerShift());
         ROOT_ptr->SetPosition(solver->GetMuPosition());
         ROOT_ptr->SetVelocity(solver->GetMuVelocity());

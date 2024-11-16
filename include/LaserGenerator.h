@@ -18,10 +18,12 @@ public:
     LaserGenerator& operator=(const LaserGenerator&) = delete;
 
     void SetEnergy(Double_t E){energy=E;};  // in J
-    void SetLinewidth(Double_t l);    // in GHz
+    void SetEnergy355(Double_t E){energy_355=E;};   // in J
+    void SetLinewidth(Double_t l){linewidth=l;};    // in GHz
     void SetSigmaX(Double_t x){sigma_x=x;}; // in mm
     void SetSigmaY(Double_t y){sigma_y=y;}; // in mm
     void SetPulseTimeWidth(Double_t p){tau=p;}; // in ns
+    void SetPulseFWHM(Double_t p){tau=0.4247*p;};   // in ns
     void SetLaserPosition(Double_t z){laser_z=z;};  // in mm
     void SetCentralFreq(Double_t freq){cen_freq=freq; laser_k=2*TMath::Pi()*cen_freq*1e9/299792458;}; // in GHz. k in m^-1
     void SetWaveLength(Double_t wvl){laser_k=2*TMath::Pi()/wvl*1e9; cen_freq=299792458/wvl;}  // in nm
@@ -31,15 +33,18 @@ public:
     void SetOBESolverPtr(OBEsolver *ptr){obe_ptr=ptr;};
 
     Double_t GetEnergy(){return energy;};
+    Double_t GetEnergy355(){return energy_355;};
     Double_t GetLinewidth(){return linewidth;};
     Double_t GetSigmaX(){return sigma_x;};
     Double_t GetSigmaY(){return sigma_y;};
     Double_t GetPulseTimeWidth(){return tau;};
     Double_t GetLaserPosition(){return laser_z;};
-    Double_t GetPeakIntensity(TVector3 r);
+    Double_t GetPeakIntensity(TVector3 r);      // in W/cm^2
+    Double_t GetPeakIntensity355(TVector3 r);   // in W/cm^2
     TVector3 GetWaveVector(){return laser_k*k_dirc;};   // in m^-1
 
     TVector3 GetFieldE(TVector3 r, Double_t t); // in V/mm
+    Double_t GetIntensity355(TVector3 r, Double_t t);    // in W/cm^2
 
 private:
     // Private constructor and destructor
@@ -49,6 +54,7 @@ private:
     OBEsolver *obe_ptr;
 
     Double_t energy;
+    Double_t energy_355;
     Double_t linewidth;
     Double_t sigma_x;
     Double_t sigma_y;

@@ -4,14 +4,12 @@
 
 #include "OBEsolver.h"
 
-OBEsolver::OBEsolver(Double_t gm1, Double_t gmion):gamma_1(gm1), gamma_ion(gmion)
+OBEsolver::OBEsolver(Double_t gm1):gamma_1(gm1)
 {
     laser_ptr = &LaserGenerator::GetInstance();
     laser_ptr->SetOBESolverPtr(this);
     Mu_ptr = &MuGenerator::GetInstance();
     ROOT_ptr = &RootManager::GetInstance();
-
-    UpdateGamma2();
 
     initial_rho = state_type (4);
     SetInitialState(1, 0, 0, 0);
@@ -22,10 +20,6 @@ OBEsolver::OBEsolver(Double_t gm1, Double_t gmion):gamma_1(gm1), gamma_ion(gmion
     SetDt(0.01);
     SetAbsErr(1e-8);
     SetRelErr(1e-6);
-}
-
-void OBEsolver::UpdateGamma2() {
-    gamma_2 = gamma_1/2 + gamma_ion/2 + laser_ptr->GetLinewidth()*TMath::Pi();
 }
 
 void OBEsolver::OBE(const state_type &rho, state_type &drhodt, const Double_t t){
@@ -39,6 +33,11 @@ void OBEsolver::OBE(const state_type &rho, state_type &drhodt, const Double_t t)
     // Time-dependent detuning and Rabi frequency
     complex<Double_t> Omega_t = GetRabiFreq(t);
     Double_t delta_t = GetDopplerShift();
+
+    Double_t gamma_ion = GetGammaIon(t);
+
+    // transverse decoherence
+    Double_t gamma_2 = gamma_1/2 + gamma_ion/2 + laser_ptr->GetLinewidth()*TMath::Pi();
 
     // Equations based on the system provided
     drhodt[0] = gamma_1 * rho_ee + (complex<Double_t>(0.0, 0.5)) * (conj(Omega_t) * rho_eg - Omega_t * rho_ge);
@@ -80,8 +79,13 @@ void OBEsolver::Observer(const state_type &rho, Double_t t) {
 //    std::cout << rho[0].real() << " ";
     ROOT_ptr->PushTimePoint(t, laser_ptr->GetFieldE(Mu_pos, t).Mag(), GetRabiFreq(t).real(),
                             rho[0].real(), rho[1].real(),
-                            rho[2].real(), rho[2].imag(), rho[3].real());
+                            rho[2].real(), rho[2].imag(), rho[3].real(), GetGammaIon(t));
 }
-//void OBEsolver::Observer(const state_type &rho, Double_t t) {
-//    std::cout << t << ", " << GetRabiFreq(t).real() << ","
-//}
+
+Double_t OBEsolver::GetGammaIon(Double_t t) {
+    Double_t cross_sec = 1.26e-17;  // in cm^2
+    Double_t I = laser_ptr->GetIntensity355(Mu_pos, t);
+    const Double_t e = 1.60217663e-19;
+
+    return cross_sec * I / (3.4949*e) * 1e-9;    // in ns^-1
+}
