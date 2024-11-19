@@ -12,6 +12,7 @@
 #include <vector>
 #include <complex>
 #include <boost/numeric/odeint.hpp>
+#include <Eigen/Dense>
 #include "TVector3.h"
 #include "TFile.h"
 #include "TTree.h"

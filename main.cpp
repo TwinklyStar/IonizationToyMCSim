@@ -7,7 +7,7 @@
 // Meyer's Singleton Pattern
 LaserGenerator *lsr_ptr = &LaserGenerator::GetInstance();
 MuGenerator *Mu_ptr = &MuGenerator::GetInstance();
-RootManager *ROOT_ptr = &RootManager::GetInstance("data/OBEtest22.root");
+RootManager *ROOT_ptr = &RootManager::GetInstance("data/OBEtest23.root");
 OBEsolver *solver = new OBEsolver(0.627);
 
 void parTestBench(int eventn);
@@ -16,9 +16,16 @@ void loader(int rate);
 
 int main() {
 
-    lsr_ptr->SetLaserPosition(3.3);
-    lsr_ptr->SetSigmaX(23);          // in mm
-    lsr_ptr->SetSigmaY(2.3);          // in mm
+    lsr_ptr->SetLaserOffset({0, 0, 0});
+    lsr_ptr->SetYawAngle(TMath::Pi()/10);
+    lsr_ptr->SetPitchAngle(TMath::Pi()/10);
+    lsr_ptr->SetRollAngle(0);
+    lsr_ptr->SetLaserOffset355({0, 0, 0});
+    lsr_ptr->SetYawAngle355(0);
+    lsr_ptr->SetPitchAngle355(0);
+    lsr_ptr->SetRollAngle355(0);
+    lsr_ptr->SetSigmaX(1);          // in mm
+    lsr_ptr->SetSigmaY(2);          // in mm
 //    lsr_ptr->SetPulseTimeWidth(1);  // in ns
     lsr_ptr->SetPulseFWHM(2);       // in ns
     lsr_ptr->SetEnergy(100e-6);      // in J
@@ -34,6 +41,9 @@ int main() {
     Mu_ptr->ReadInputFile("../datasets/test1k.dat");
 
     ROOT_ptr->SetRndSeed(1000); // A different seed from Mu_ptr
+
+//    parTestBench(1);
+
 
     solver->SetStartTime(0);        // in ns
     solver->SetEndTime(10);         // in ns
@@ -122,49 +132,33 @@ void SolveOBETest(int eventn){
 
 void parTestBench(int eventn) {
     int i;  // event loop index
-    Double_t t_pos_x, t_pos_y, t_pos_z, t_v_x, t_v_y, t_v_z, t_dopp, t_rabi, t_E;
-    TFile *ff = TFile::Open("test00.root", "RECREATE");
+    Double_t t_pos_x, t_pos_y, t_pos_z, t_v_x, t_v_y, t_v_z, t_dopp, t_Int, t_Int_355;
+    TFile *ff = TFile::Open("data/test14.root", "RECREATE");
     TTree *t1 = new TTree("pars", "A tree of parameters");
-    t1->Branch("eventn", &i);
+//    t1->Branch("eventn", &i);
     t1->Branch("x", &t_pos_x);
     t1->Branch("y", &t_pos_y);
     t1->Branch("z", &t_pos_z);
-    t1->Branch("vx", &t_v_x);
-    t1->Branch("vy", &t_v_y);
-    t1->Branch("vz", &t_v_z);
-    t1->Branch("doppler", &t_dopp);
-    t1->Branch("Efield", &t_E); // at t=0
-    t1->Branch("rabi", &t_rabi);    // at t=0
+//    t1->Branch("vx", &t_v_x);
+//    t1->Branch("vy", &t_v_y);
+//    t1->Branch("vz", &t_v_z);
+//    t1->Branch("doppler", &t_dopp);
+    t1->Branch("Intensity", &t_Int); // at t=0
+    t1->Branch("Intensity355", &t_Int_355); // at t=0
 
-    for (i = 0; i < eventn; i++) {
-        if (eventn >= 100 && i % (eventn/100) == 0) loader(i/(eventn/100));
+    for (int x_idx=0; x_idx<100; x_idx++){
+        for (int y_idx=0; y_idx<100; y_idx++){
+            for (int z_idx=0; z_idx<100; z_idx++){
+                t_pos_x = -10 + 0.2*x_idx;
+                t_pos_y = -10 + 0.2*y_idx;
+                t_pos_z = -10 + 0.2*z_idx;
 
-        solver->SetMuPosition(Mu_ptr->SampleLocation());
-        solver->SetMuVelocity(Mu_ptr->SampleVelocity());
-        t_pos_x = solver->GetMuPosition().X();
-        t_pos_y = solver->GetMuPosition().Y();
-        t_pos_z = solver->GetMuPosition().Z();
-        t_v_x = solver->GetMuVelocity().X();
-        t_v_y = solver->GetMuVelocity().Y();
-        t_v_z = solver->GetMuVelocity().Z();
-        t_dopp = solver->GetDopplerShift();
-        t_E = lsr_ptr->GetFieldE(solver->GetMuPosition(), 0).Y();
-        t_rabi = solver->GetRabiFreq(0).real();
+                t_Int = lsr_ptr->GetIntensity({t_pos_x, t_pos_y, t_pos_z}, 0);
+                t_Int_355 = lsr_ptr->GetIntensity355({t_pos_x, t_pos_y, t_pos_z}, 0);
 
-        t1->Fill();
-    }
-
-    TTree *t2 = new TTree("pars_t", "A tree of time-dependent parameters");
-    Double_t t; // in ns
-    t2->Branch("t", &t);
-    t2->Branch("Efield", &t_E);
-    t2->Branch("rabi", &t_rabi);
-    t=0;
-    while (t<15){
-        t_E = lsr_ptr->GetFieldE({0,0,0}, t).Y();
-        t_rabi = solver->GetRabiFreq(t).real();
-        t2->Fill();
-        t+=0.01;
+                t1->Fill();
+            }
+        }
     }
 
 
