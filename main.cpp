@@ -7,7 +7,7 @@
 // Meyer's Singleton Pattern
 LaserGenerator *lsr_ptr = &LaserGenerator::GetInstance();
 MuGenerator *Mu_ptr = &MuGenerator::GetInstance();
-RootManager *ROOT_ptr = &RootManager::GetInstance("data/OBEtest23.root");
+RootManager *ROOT_ptr = &RootManager::GetInstance("data/OBEtest31.root");
 OBEsolver *solver = new OBEsolver(0.627);
 
 void parTestBench(int eventn);
@@ -16,20 +16,22 @@ void loader(int rate);
 
 int main() {
 
-    lsr_ptr->SetLaserOffset({0, 0, 0});
-    lsr_ptr->SetYawAngle(TMath::Pi()/10);
-    lsr_ptr->SetPitchAngle(TMath::Pi()/10);
+    lsr_ptr->SetLaserOffset({0, 0, 3.3});
+
+    lsr_ptr->SetYawAngle(0);
+    lsr_ptr->SetPitchAngle(0);
     lsr_ptr->SetRollAngle(0);
     lsr_ptr->SetLaserOffset355({0, 0, 0});
     lsr_ptr->SetYawAngle355(0);
     lsr_ptr->SetPitchAngle355(0);
     lsr_ptr->SetRollAngle355(0);
-    lsr_ptr->SetSigmaX(1);          // in mm
-    lsr_ptr->SetSigmaY(2);          // in mm
+
+    lsr_ptr->SetSigmaX(4);          // in mm
+    lsr_ptr->SetSigmaY(1);          // in mm
 //    lsr_ptr->SetPulseTimeWidth(1);  // in ns
     lsr_ptr->SetPulseFWHM(2);       // in ns
-    lsr_ptr->SetEnergy(100e-6);      // in J
-    lsr_ptr->SetEnergy355(0.3);     // in J
+    lsr_ptr->SetEnergy(13.5e-6);      // in J
+    lsr_ptr->SetEnergy355(8e-3);     // in J
 //    lsr_ptr->SetEnergy(0);      // in J
     lsr_ptr->SetLinewidth(80);       // in GHz
     lsr_ptr->SetWaveLength(122);  // in nm

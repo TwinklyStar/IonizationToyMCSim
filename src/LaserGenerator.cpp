@@ -12,10 +12,14 @@ LaserGenerator& LaserGenerator::GetInstance() {
 }
 
 TVector3 LaserGenerator::GetFieldE(TVector3 r, Double_t t) {
-    TVector3 laser_r = BeamToLaserCoord(r);
-    Double_t x = laser_r.X();
-    Double_t y = laser_r.Y();
-    Double_t z = laser_r.Z();
+//    TVector3 laser_r = BeamToLaserCoord(r);
+//    Double_t x = laser_r.X();
+//    Double_t y = laser_r.Y();
+//    Double_t z = laser_r.Z();
+    Double_t x = r.Y(); // simple version
+    Double_t y = r.Z() - 3.3; // simple version
+    Double_t z = r.X(); // simple version
+
     const Double_t eta = 376.7303134;
 
     Double_t prefactor = sqrt(2.0 * sqrt(2.0) * eta * energy / (pow(TMath::Pi(), 3.0 / 2.0) * sigma_x * sigma_y  * tau *
@@ -35,10 +39,15 @@ TVector3 LaserGenerator::GetFieldE(TVector3 r, Double_t t) {
 }
 
 Double_t LaserGenerator::GetPeakIntensity(TVector3 r) {
-    TVector3 laser_r = BeamToLaserCoord(r);
-    Double_t x = laser_r.X();
-    Double_t y = laser_r.Y();
-    Double_t z = laser_r.Z();
+//    TVector3 laser_r = BeamToLaserCoord(r);
+//    Double_t x = laser_r.X();
+//    Double_t y = laser_r.Y();
+//    Double_t z = laser_r.Z();
+    Double_t x = r.Y(); // simple version
+    Double_t y = r.Z() - 3.3; // simple version
+    Double_t z = r.X(); // simple version
+
+
     const Double_t eta = 376.7303134;
 //
 //    Double_t prefactor = sqrt(2.0 * sqrt(2.0) * eta * energy / (pow(TMath::Pi(), 3.0 / 2.0) * sigma_x * sigma_y  * tau
@@ -62,10 +71,14 @@ Double_t LaserGenerator::GetPeakIntensity(TVector3 r) {
 }
 
 Double_t LaserGenerator::GetPeakIntensity355(TVector3 r) {
-    TVector3 laser_r = BeamToLaserCoord(r);
-    Double_t x = laser_r.X();
-    Double_t y = laser_r.Y();
-    Double_t z = laser_r.Z();
+//    TVector3 laser_r = BeamToLaserCoord(r);
+//    Double_t x = laser_r.X();
+//    Double_t y = laser_r.Y();
+//    Double_t z = laser_r.Z();
+    Double_t x = r.Y(); // simple version
+    Double_t y = r.Z() - 3.3; // simple version
+    Double_t z = r.X(); // simple version
+
     // Define the prefactor
     double prefactor = (2.0 * energy_355) / (sqrt(2.0 * TMath::Pi()) * TMath::Pi() * sigma_x * sigma_y * tau * pow(10, -9));
 
@@ -79,10 +92,13 @@ Double_t LaserGenerator::GetPeakIntensity355(TVector3 r) {
 }
 
 Double_t LaserGenerator::GetIntensity(TVector3 r, Double_t t) {
-    TVector3 laser_r = BeamToLaserCoord(r);
-    Double_t x = laser_r.X();
-    Double_t y = laser_r.Y();
-    Double_t z = laser_r.Z();
+//    TVector3 laser_r = BeamToLaserCoord(r);
+//    Double_t x = laser_r.X();
+//    Double_t y = laser_r.Y();
+//    Double_t z = laser_r.Z();
+    Double_t x = r.Y(); // simple version
+    Double_t y = r.Z() - 3.3; // simple version
+    Double_t z = r.X(); // simple version
     // Define the prefactor
     double prefactor = (2.0 * energy) / (sqrt(2.0 * TMath::Pi()) * TMath::Pi() * sigma_x * sigma_y * tau * pow(10, -9));
 
@@ -99,10 +115,14 @@ Double_t LaserGenerator::GetIntensity(TVector3 r, Double_t t) {
 }
 
 Double_t LaserGenerator::GetIntensity355(TVector3 r, Double_t t) {
-    TVector3 laser_r = BeamToLaserCoord355(r);
-    Double_t x = laser_r.X();
-    Double_t y = laser_r.Y();
-    Double_t z = laser_r.Z();
+//    TVector3 laser_r = BeamToLaserCoord355(r);
+//    Double_t x = laser_r.X();
+//    Double_t y = laser_r.Y();
+//    Double_t z = laser_r.Z();
+    Double_t x = r.Y(); // simple version
+    Double_t y = r.Z() - 3.3; // simple version
+    Double_t z = r.X(); // simple version
+
     // Define the prefactor
     double prefactor = (2.0 * energy_355) / (sqrt(2.0 * TMath::Pi()) * TMath::Pi() * sigma_x * sigma_y * tau * pow(10, -9));
 
@@ -171,25 +191,26 @@ TVector3 LaserGenerator::BeamToLaserCoord355(TVector3 r) {
 }
 
 TVector3 LaserGenerator::GetWaveVector() {
-    Eigen::MatrixXd before_rot(3,1);
-    before_rot << 0,
-                  0,
-                  1;
-
-    Eigen::MatrixXd Y_rev(3, 3), P_rev(3, 3), R_rev(3, 3);
-    Y_rev << 1, 0, 0,
-             0, TMath::Cos(yaw), -TMath::Sin(yaw),
-             0, TMath::Sin(yaw), TMath::Cos(yaw);
-    P_rev << TMath::Cos(pitch) ,0, TMath::Sin(pitch),
-             0, 1, 0,
-             -TMath::Sin(pitch), 0, TMath::Cos(pitch);
-    R_rev << TMath::Cos(roll), -TMath::Sin(roll), 0,
-             TMath::Sin(roll), TMath::Cos(roll), 0,
-             0, 0, 1;
-
-    Eigen::MatrixXd after_rot = Y_rev*P_rev*R_rev*before_rot;
-
-    return {laser_k*after_rot(2,0), laser_k*after_rot(0,0), laser_k*after_rot(1,0)};
-    // z'->x. x'->y, y'->z
+//    Eigen::MatrixXd before_rot(3,1);
+//    before_rot << 0,
+//                  0,
+//                  1;
+//
+//    Eigen::MatrixXd Y_rev(3, 3), P_rev(3, 3), R_rev(3, 3);
+//    Y_rev << 1, 0, 0,
+//             0, TMath::Cos(yaw), -TMath::Sin(yaw),
+//             0, TMath::Sin(yaw), TMath::Cos(yaw);
+//    P_rev << TMath::Cos(pitch) ,0, TMath::Sin(pitch),
+//             0, 1, 0,
+//             -TMath::Sin(pitch), 0, TMath::Cos(pitch);
+//    R_rev << TMath::Cos(roll), -TMath::Sin(roll), 0,
+//             TMath::Sin(roll), TMath::Cos(roll), 0,
+//             0, 0, 1;
+//
+//    Eigen::MatrixXd after_rot = Y_rev*P_rev*R_rev*before_rot;
+//
+//    return {laser_k*after_rot(2,0), laser_k*after_rot(0,0), laser_k*after_rot(1,0)};
+//    // z'->x. x'->y, y'->z
+    return {laser_k,0,0};
 
 }
