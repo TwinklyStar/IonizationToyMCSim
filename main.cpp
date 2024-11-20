@@ -3,11 +3,14 @@
 #include "LaserGenerator.h"
 #include "MuGenerator.h"
 #include "RootManager.h"
+#include "RunManager.h"
 
 // Meyer's Singleton Pattern
+RunManager *RM_ptr = &RunManager::GetInstance();
 LaserGenerator *lsr_ptr = &LaserGenerator::GetInstance();
 MuGenerator *Mu_ptr = &MuGenerator::GetInstance();
-RootManager *ROOT_ptr = &RootManager::GetInstance("data/OBEtest31.root");
+//RootManager *ROOT_ptr = &RootManager::GetInstance("data/OBEtest35.root");
+RootManager *ROOT_ptr = &RootManager::GetInstance();
 OBEsolver *solver = new OBEsolver(0.627);
 
 void parTestBench(int eventn);
@@ -16,50 +19,52 @@ void loader(int rate);
 
 int main() {
 
-    lsr_ptr->SetLaserOffset({0, 0, 3.3});
+    RM_ptr->ReadCommandFile("ioni_test.mac");
 
-    lsr_ptr->SetYawAngle(0);
-    lsr_ptr->SetPitchAngle(0);
-    lsr_ptr->SetRollAngle(0);
-    lsr_ptr->SetLaserOffset355({0, 0, 0});
-    lsr_ptr->SetYawAngle355(0);
-    lsr_ptr->SetPitchAngle355(0);
-    lsr_ptr->SetRollAngle355(0);
-
-    lsr_ptr->SetSigmaX(4);          // in mm
-    lsr_ptr->SetSigmaY(1);          // in mm
-//    lsr_ptr->SetPulseTimeWidth(1);  // in ns
-    lsr_ptr->SetPulseFWHM(2);       // in ns
-    lsr_ptr->SetEnergy(13.5e-6);      // in J
-    lsr_ptr->SetEnergy355(8e-3);     // in J
-//    lsr_ptr->SetEnergy(0);      // in J
-    lsr_ptr->SetLinewidth(80);       // in GHz
-    lsr_ptr->SetWaveLength(122);  // in nm
-    lsr_ptr->SetLaserDirection({1, 0, 0});  // vector direction
-    lsr_ptr->SetPeakTime(5);        // in ns
+//    lsr_ptr->SetLaserOffset({0, 0, 3.3});
+//    lsr_ptr->SetLaserOffset355({0, 0, 3.3});
+//
+//    lsr_ptr->SetEnergy(13.5e-6);      // in J
+//    lsr_ptr->SetEnergy355(8e-3);     // in J
+//
+//    lsr_ptr->SetYawAngle(0);
+//    lsr_ptr->SetPitchAngle(0);
+//    lsr_ptr->SetRollAngle(0);
+//    lsr_ptr->SetYawAngle355(0);
+//    lsr_ptr->SetPitchAngle355(0);
+//    lsr_ptr->SetRollAngle355(0);
+//    lsr_ptr->UpdateRotMat();
+//
+//    lsr_ptr->SetSigmaX(4);          // in mm
+//    lsr_ptr->SetSigmaY(1);          // in mm
+////    lsr_ptr->SetPulseTimeWidth(1);  // in ns
+//    lsr_ptr->SetPulseFWHM(2);       // in ns
+//    lsr_ptr->SetLinewidth(80);       // in GHz
+//    lsr_ptr->SetWaveLength(122);  // in nm
+//    lsr_ptr->SetPeakTime(5);        // in ns
 
     Mu_ptr->SetRndSeed(999);
     Mu_ptr->SetTemperature(322);
-    Mu_ptr->ReadInputFile("../datasets/test1k.dat");
+//    Mu_ptr->ReadInputFile("../datasets/test1k.dat");
 
     ROOT_ptr->SetRndSeed(1000); // A different seed from Mu_ptr
 
 //    parTestBench(1);
 
-
-    solver->SetStartTime(0);        // in ns
-    solver->SetEndTime(10);         // in ns
-    solver->SetDt(0.001);            // in ns
-    solver->SetAbsErr(1e-8);
-    solver->SetRelErr(1e-6);
-    solver->SetInitialState(1, 0, 0, 0);
+//    solver->SetStartTime(0);        // in ns
+//    solver->SetEndTime(10);         // in ns
+//    solver->SetDt(0.001);            // in ns
+//    solver->SetAbsErr(1e-8);
+//    solver->SetRelErr(1e-6);
+//    solver->SetInitialState(1, 0, 0, 0);
 
 //    int eventn = 10000;
-    int eventn = Mu_ptr->GetInputEventNum();
-    std::cout << "--- Number of events: " << eventn << std::endl;
+//    int eventn = Mu_ptr->GetInputEventNum();
+//    std::cout << "--- Number of events: " << eventn << std::endl;
 //    parTestBench(eventn);
-    SolveOBE(eventn);
+//    SolveOBE(eventn);
 //    SolveOBE(10);
+    RM_ptr->SolveOBE();
 
     std::cout << "\nHello, World!" << std::endl;
     return 0;

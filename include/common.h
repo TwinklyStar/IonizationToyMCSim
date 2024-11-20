@@ -10,6 +10,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <string>
 #include <complex>
 #include <boost/numeric/odeint.hpp>
 #include <Eigen/Dense>

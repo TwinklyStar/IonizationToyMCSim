@@ -10,11 +10,24 @@
 class RootManager {
 public:
     // Meyers' Singleton - Get the instance of the class
-    static RootManager& GetInstance(const TString name="");
+    static RootManager& GetInstance();
 
     // Delete copy constructor and assignment operator to avoid copying
     RootManager(const RootManager&) = delete;
     RootManager& operator=(const RootManager&) = delete;
+
+    void Initialize();
+
+    void SetOutFileName(std::string name) {outfile_name = name;};
+    void Sett(bool flag) {IftOn=flag;};
+    void SetRabiFreq(bool flag) {IfRabiFreqOn=flag;};
+    void SetEField(bool flag) {IfEFieldOn=flag;};
+    void SetGammaIon(bool flag) {IfGammaIonOn=flag;};
+    void Setrho_gg(bool flag) {Ifrho_ggOn=flag;};
+    void Setrho_ee(bool flag) {Ifrho_eeOn=flag;};
+    void Setrho_ge_r(bool flag) {Ifrho_ge_rOn=flag;};
+    void Setrho_ge_i(bool flag) {Ifrho_ge_iOn=flag;};
+    void Setrho_ion(bool flag) {Ifrho_ionOn=flag;};
 
     void SetEventID(Int_t id){eventID=id;};
     void SetPosition(TVector3 r){x=r.X(); y=r.Y(); z=r.Z();};
@@ -35,7 +48,7 @@ public:
 private:
     // Private constructor and destructor
     ~RootManager(){};
-    RootManager(TString name);
+    RootManager(){outfile_name = "OBE00.root";};
 
     TString outfile_name;
     TFile *output_file;
@@ -73,6 +86,16 @@ private:
     Int_t if_ionized;
 
     TRandom randGen;
+
+    bool IftOn=true;
+    bool IfRabiFreqOn=true;
+    bool IfEFieldOn=true;
+    bool IfGammaIonOn=true;
+    bool Ifrho_ggOn=true;
+    bool Ifrho_eeOn=true;
+    bool Ifrho_ge_rOn=true;
+    bool Ifrho_ge_iOn=true;
+    bool Ifrho_ionOn=true;
 
 
 };

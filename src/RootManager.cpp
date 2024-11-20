@@ -4,9 +4,9 @@
 
 #include "RootManager.h"
 
-RootManager::RootManager(TString name): outfile_name(name){
+void RootManager::Initialize() {
     std::cout << "--- Output file name: " << outfile_name << std::endl;
-    output_file = TFile::Open(name, "RECREATE");
+    output_file = TFile::Open(outfile_name, "RECREATE");
     output_tree = new TTree("obe", "A tree storing parameters and time evolution of states");
 
     output_tree->Branch("EventID", &eventID);
@@ -26,20 +26,20 @@ RootManager::RootManager(TString name): outfile_name(name){
     output_tree->Branch("PeakIntensity355", &peak_intensity_355);
     output_tree->Branch("DoppFreq", &dopp_freq);
     output_tree->Branch("Step_n", &step_n);
-    output_tree->Branch("t", &t);
-    output_tree->Branch("RabiFreq", &rabi_freq);
-    output_tree->Branch("EField", &E_field);
-    output_tree->Branch("GammaIon", &gamma_ion);
-    output_tree->Branch("rho_gg", &rho_gg);
-    output_tree->Branch("rho_ee", &rho_ee);
-    output_tree->Branch("rho_ge_r", &rho_ge_r);
-    output_tree->Branch("rho_ge_i", &rho_ge_i);
-    output_tree->Branch("rho_ion", &rho_ion);
+    if (IftOn)          output_tree->Branch("t", &t);
+    if (IfRabiFreqOn)   output_tree->Branch("RabiFreq", &rabi_freq);
+    if (IfEFieldOn)     output_tree->Branch("EField", &E_field);
+    if (IfGammaIonOn)   output_tree->Branch("GammaIon", &gamma_ion);
+    if (Ifrho_ggOn)     output_tree->Branch("rho_gg", &rho_gg);
+    if (Ifrho_eeOn)     output_tree->Branch("rho_ee", &rho_ee);
+    if (Ifrho_ge_rOn)   output_tree->Branch("rho_ge_r", &rho_ge_r);
+    if (Ifrho_ge_iOn)   output_tree->Branch("rho_ge_i", &rho_ge_i);
+    if (Ifrho_ionOn)    output_tree->Branch("rho_ion", &rho_ion);
     output_tree->Branch("LastRho_gg", &last_rho_gg);
     output_tree->Branch("LastRho_ee", &last_rho_ee);
     output_tree->Branch("LastRho_ion", &last_rho_ion);
     output_tree->Branch("IfIonized", &if_ionized);
-};
+}
 
 void RootManager::PushTimePoint(Double_t tt, Double_t tE_field, Double_t trabi_freq, Double_t trho_gg, Double_t trho_ee,
                                 Double_t trho_ge_r, Double_t trho_ge_i, Double_t trho_ion, Double_t tgamma_ion) {
@@ -99,7 +99,7 @@ void RootManager::FillEvent() {
     gamma_ion.shrink_to_fit();
 }
 
-RootManager& RootManager::GetInstance(const TString name) {
-    static RootManager instance(name);
+RootManager& RootManager::GetInstance() {
+    static RootManager instance;
     return instance;
 }

@@ -34,8 +34,9 @@ public:
     void SetRollAngle355(Double_t r){roll_355 = r;};   // in rad
     void SetCentralFreq(Double_t freq){cen_freq=freq; laser_k=2*TMath::Pi()*cen_freq*1e9/299792458;}; // in GHz. k in m^-1
     void SetWaveLength(Double_t wvl){laser_k=2*TMath::Pi()/wvl*1e9; cen_freq=299792458/wvl;}  // in nm
-    void SetLaserDirection(TVector3 k){k_dirc=k.Unit();};
     void SetPeakTime(Double_t t){peak_time=t;};
+
+    void UpdateRotMat();
 
     void SetOBESolverPtr(OBEsolver *ptr){obe_ptr=ptr;};
 
@@ -55,10 +56,7 @@ public:
 
 private:
     // Private constructor and destructor
-    LaserGenerator(){
-        yaw=0; pitch=0; roll=0;
-        yaw_355=0; pitch_355=0; roll_355=0;
-        peak_time=0; obe_ptr=nullptr;};
+    LaserGenerator();
     ~LaserGenerator(){};
 
     TVector3 BeamToLaserCoord(TVector3 r); // Transform from target coordinate to laser coordinate
@@ -85,9 +83,11 @@ private:
 
     Double_t cen_freq;
     Double_t laser_k;
-    TVector3 k_dirc;
+    TVector3 laser_dirc;
 
-
+    Eigen::Matrix3d rot_mat_122;
+    Eigen::Matrix3d rot_mat_355;
+    Eigen::Matrix3d rot_mat_rev_122;
 
 };
 
