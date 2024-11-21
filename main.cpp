@@ -17,9 +17,18 @@ void parTestBench(int eventn);
 void SolveOBE(int eventn);
 void loader(int rate);
 
-int main() {
 
-    RM_ptr->ReadCommandFile("ioni_test.mac");
+int main(int argc, char* argv[]) {
+    // Check if a macro file is provided
+    if (argc < 2) {
+        std::cerr << "Usage: " << argv[0] << " <macro_file_path>" << std::endl;
+        return 1;
+    }
+
+    // Get the macro file path from the command line arguments
+    std::string macro_file_path = argv[1];
+
+    RM_ptr->ReadCommandFile(macro_file_path);
 
 //    lsr_ptr->SetLaserOffset({0, 0, 3.3});
 //    lsr_ptr->SetLaserOffset355({0, 0, 3.3});
@@ -65,8 +74,9 @@ int main() {
 //    SolveOBE(eventn);
 //    SolveOBE(10);
     RM_ptr->SolveOBE();
+//    RM_ptr->parTestBench();
 
-    std::cout << "\nHello, World!" << std::endl;
+    std::cout << "\nSimulation completed." << std::endl;
     return 0;
 }
 

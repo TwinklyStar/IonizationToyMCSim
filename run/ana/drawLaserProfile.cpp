@@ -15,7 +15,7 @@
 #include <vector>
 
 void drawLaserProfile() {
-    TFile *ff = TFile::Open("data/test12.root", "READ");
+    TFile *ff = TFile::Open("../data/test17.root", "READ");
     TTree *tt = (TTree *) ff->Get("pars");
 
     TCanvas cc("cc", "cc", 600, 600);
@@ -31,7 +31,7 @@ void drawLaserProfile() {
     gg->SetNpy(100);
     TH2D *hh = gg->GetHistogram();
     hh->Draw("colz");
-    cc.SaveAs("plots/angle/12_xy.pdf");
+    cc.SaveAs("plots/angle/17_xy.pdf");
     delete gg;
 
     n = tt->Draw("y:z:Intensity", "x >= 0 && x < 0.1");
@@ -45,7 +45,7 @@ void drawLaserProfile() {
     gg->SetNpy(100);
     hh = gg->GetHistogram();
     hh->Draw("colz");
-    cc.SaveAs("plots/angle/12_yz.pdf");
+    cc.SaveAs("plots/angle/17_yz.pdf");
     delete gg;
 
     n = tt->Draw("z:x:Intensity", "y>=0 && y < 0.1");
@@ -59,5 +59,5 @@ void drawLaserProfile() {
     gg->SetNpy(100);
     hh = gg->GetHistogram();
     hh->Draw("colz");
-    cc.SaveAs("plots/angle/12_zx.pdf");
+    cc.SaveAs("plots/angle/17_zx.pdf");
 }

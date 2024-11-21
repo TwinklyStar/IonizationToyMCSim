@@ -202,7 +202,7 @@ void RunManager::SolveOBETest() {
 void RunManager::parTestBench() {
     int i;  // event loop index
     Double_t t_pos_x, t_pos_y, t_pos_z, t_v_x, t_v_y, t_v_z, t_dopp, t_Int, t_Int_355;
-    TFile *ff = TFile::Open("data/test14.root", "RECREATE");
+    TFile *ff = TFile::Open("data/test17.root", "RECREATE");
     TTree *t1 = new TTree("pars", "A tree of parameters");
 //    t1->Branch("eventn", &i);
     t1->Branch("x", &t_pos_x);

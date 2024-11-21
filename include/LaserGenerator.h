@@ -26,12 +26,12 @@ public:
     void SetPulseFWHM(Double_t p){tau=0.4247*p;};   // in ns
     void SetLaserOffset(TVector3 r){laser_offset=r;};  // in mm
     void SetLaserOffset355(TVector3 r){laser_offset_355=r;};  // in mm
-    void SetYawAngle(Double_t y){yaw = y;};     // in rad
-    void SetPitchAngle(Double_t p){pitch = p;}; // in rad
-    void SetRollAngle(Double_t r){roll = r;};   // in rad
-    void SetYawAngle355(Double_t y){yaw_355 = y;};     // in rad
-    void SetPitchAngle355(Double_t p){pitch_355 = p;}; // in rad
-    void SetRollAngle355(Double_t r){roll_355 = r;};   // in rad
+    void SetYawAngle(Double_t y){yaw = y * TMath::Pi()/180;};     // in deg
+    void SetPitchAngle(Double_t p){pitch = p * TMath::Pi()/180;}; // in deg
+    void SetRollAngle(Double_t r){roll = r * TMath::Pi()/180;};   // in deg
+    void SetYawAngle355(Double_t y){yaw_355 = y * TMath::Pi()/180;};     // in deg
+    void SetPitchAngle355(Double_t p){pitch_355 = p * TMath::Pi()/180;}; // in deg
+    void SetRollAngle355(Double_t r){roll_355 = r * TMath::Pi()/180;};   // in deg
     void SetCentralFreq(Double_t freq){cen_freq=freq; laser_k=2*TMath::Pi()*cen_freq*1e9/299792458;}; // in GHz. k in m^-1
     void SetWaveLength(Double_t wvl){laser_k=2*TMath::Pi()/wvl*1e9; cen_freq=299792458/wvl;}  // in nm
     void SetPeakTime(Double_t t){peak_time=t;};
