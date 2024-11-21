@@ -1,8 +1,8 @@
 # This is a test script for ionization program
 
-# AddLaser pulse_energy pulse_FWHM peak_time linewidth sigma_x sigma_y offset_x offset_y offset_z yaw pitch roll 
-AddLaser122 13.5e-6 2 5 80 4 1 0 0 3.3 0 0 0
-AddLaser355 8e-3 2 5 80 4 1 0 0 3.3 0 0 0
+# AddLaser  pulse_energy pulse_FWHM peak_time linewidth sigma_x sigma_y offset_x offset_y offset_z yaw pitch roll
+AddLaser122 13.5e-6      2          5         80        4       1       0       0         2        0   0     0
+AddLaser355 8e-3         2          5         80        4       1       0       0         2        0   0     0
 
 MuInputFile ../datasets/test1k.dat
 
