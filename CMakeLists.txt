@@ -13,9 +13,9 @@ if(NOT Eigen3_FOUND)
 endif()
 
 # boost library
-set(BOOST_ROOT /opt/homebrew/Cellar/boost/1.86.0)
-set(BOOST_INCLUDEDIR /opt/homebrew/Cellar/boost/1.86.0/include)
-set(BOOST_LIBRARY_DIR /opt/homebrew/Cellar/boost/1.86.0/lib)
+#set(BOOST_ROOT /opt/homebrew/Cellar/boost/1.86.0)
+#set(BOOST_INCLUDEDIR /opt/homebrew/Cellar/boost/1.86.0/include)
+#set(BOOST_LIBRARY_DIR /opt/homebrew/Cellar/boost/1.86.0/lib)
 
 find_package(Boost 1.86.0 COMPONENTS system filesystem REQUIRED)
 
