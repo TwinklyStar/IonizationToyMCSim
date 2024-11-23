@@ -7,6 +7,8 @@
 void RootManager::Initialize() {
     std::cout << "--- Output file name: " << outfile_name << std::endl;
     output_file = TFile::Open(outfile_name, "RECREATE");
+    if (! output_file->IsOpen())
+        throw std::runtime_error("Failed to open file: " + outfile_name);
     output_tree = new TTree("obe", "A tree storing parameters and time evolution of states");
 
     output_tree->Branch("EventID", &eventID);
