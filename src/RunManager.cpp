@@ -41,11 +41,27 @@ void RunManager::ReadCommandFile(const std::string& file_path) {
                 >> linewidth_122 >> sigma_x_122 >> sigma_y_122
                 >> offset_x_122 >> offset_y_122 >> offset_z_122
                 >> yaw_122 >> pitch_122 >> roll_122;
+
+            lsr_ptr->AddLaser122(pulse_energy_122, pulse_FWHM_122, peak_time_122,
+                                 linewidth_122, sigma_x_122, sigma_y_122,
+                                 offset_x_122, offset_y_122, offset_z_122,
+                                 yaw_122, pitch_122, roll_122);
+
+        } else if (command == "RandomSeed") {
+            iss >> rdm_seed;
+            rdm_gen.SetSeed(rdm_seed);
+            std::cout << "-- RunManager: Set random seed as " << rdm_seed << std::endl;
         } else if (command == "AddLaser355") {
             iss >> pulse_energy_355 >> pulse_FWHM_355 >> peak_time_355
                 >> linewidth_355 >> sigma_x_355 >> sigma_y_355
                 >> offset_x_355 >> offset_y_355 >> offset_z_355
                 >> yaw_355 >> pitch_355 >> roll_355;
+
+            lsr_ptr->AddLaser355(pulse_energy_355, pulse_FWHM_355, peak_time_355,
+                                 linewidth_355, sigma_x_355, sigma_y_355,
+                                 offset_x_355, offset_y_355, offset_z_355,
+                                 yaw_355, pitch_355, roll_355);
+
         } else if (command == "MuInputFile") {
             iss >> input_file_name;
         } else if (command == "OutputFile") {
@@ -59,6 +75,10 @@ void RunManager::ReadCommandFile(const std::string& file_path) {
                 ROOT_ptr->SetRabiFreq((last_word == "on"));
             } else if (sub_command == "EField") {
                 ROOT_ptr->SetEField((last_word == "on"));
+            } else if (sub_command == "Intensity122") {
+                ROOT_ptr->SetIntensity122((last_word == "on"));
+            } else if (sub_command == "Intensity355") {
+                ROOT_ptr->SetIntensity355((last_word == "on"));
             } else if (sub_command == "GammaIon") {
                 ROOT_ptr->SetGammaIon((last_word == "on"));
             } else if (sub_command == "rho_gg") {
@@ -75,40 +95,14 @@ void RunManager::ReadCommandFile(const std::string& file_path) {
                 std::cerr << "WARNING RunManager: Unknown branch: " << sub_command << std::endl;
             }
         } else {
-            std::cerr << "WARNING RunManager: Unknown cammand: " << sub_command << std::endl;
+            std::cerr << "WARNING RunManager: Unknown cammand: " << command << std::endl;
         }
     }
     file.close();
 
-    InitializeLaserGenerator();
     InitializeMuGenerator();
     InitializeRootManager();
     InitializeOBEsolver();
-}
-
-void RunManager::InitializeLaserGenerator() {
-    lsr_ptr->SetWaveLength(122);
-    lsr_ptr->SetEnergy(pulse_energy_122);
-    lsr_ptr->SetPulseFWHM(pulse_FWHM_122);
-    lsr_ptr->SetPeakTime(peak_time_122);
-    lsr_ptr->SetLinewidth(linewidth_122);
-    lsr_ptr->SetSigmaX(sigma_x_122);
-    lsr_ptr->SetSigmaY(sigma_y_122);
-    lsr_ptr->SetLaserOffset({offset_x_122, offset_y_122, offset_z_122});
-    lsr_ptr->SetYawAngle(yaw_122);
-    lsr_ptr->SetPitchAngle(pitch_122);
-    lsr_ptr->SetRollAngle(roll_122);
-
-    lsr_ptr->SetEnergy355(pulse_energy_355);
-//    lsr_ptr->SetPulseFWHM355(pulse_FWHM_355);
-//    lsr_ptr->SetPeakTime355(peak_time_355);
-//    lsr_ptr->SetSigmaX355(sigma_x_355);
-//    lsr_ptr->SetSigmaY355(sigma_y_355);
-    lsr_ptr->SetLaserOffset355({offset_x_355, offset_y_355, offset_z_355});
-    lsr_ptr->SetYawAngle355(yaw_355);
-    lsr_ptr->SetPitchAngle355(pitch_355);
-    lsr_ptr->SetRollAngle355(roll_355);
-    lsr_ptr->UpdateRotMat();
 }
 
 void RunManager::InitializeMuGenerator() {
@@ -141,10 +135,10 @@ void RunManager::SolveOBE() {
         solver->solve();
 
         ROOT_ptr->SetEventID(i);
-        ROOT_ptr->SetLaserPars(lsr_ptr->GetEnergy(), lsr_ptr->GetEnergy355(), lsr_ptr->GetPulseTimeWidth(),
-                               lsr_ptr->GetSigmaX(), lsr_ptr->GetSigmaY(),
-                               lsr_ptr->GetPeakIntensity(solver->GetMuPosition()),
-                               lsr_ptr->GetPeakIntensity355(solver->GetMuPosition()), lsr_ptr->GetLinewidth());
+//        ROOT_ptr->SetLaserPars(lsr_ptr->GetEnergy(), lsr_ptr->GetEnergy355(), lsr_ptr->GetPulseTimeWidth(),
+//                               lsr_ptr->GetSigmaX(), lsr_ptr->GetSigmaY(),
+//                               lsr_ptr->GetPeakIntensity(solver->GetMuPosition()),
+//                               lsr_ptr->GetPeakIntensity355(solver->GetMuPosition()), lsr_ptr->GetLinewidth());
         ROOT_ptr->SetDoppFreq(solver->GetDopplerShift());
         ROOT_ptr->SetPosition(solver->GetMuPosition());
         ROOT_ptr->SetVelocity(solver->GetMuVelocity());
@@ -168,7 +162,7 @@ void RunManager::SolveOBETest() {
 //            linewidth_arr[j] = j;
 //            dopp_arr[j] = -100 + j*200/100.;
 //        }
-        lsr_ptr->SetEnergy(10e-6);
+//        lsr_ptr->SetEnergy(10e-6);
 //        solver->SetMuPosition(Mu_ptr->SampleLocation());
 //        solver->SetMuVelocity(Mu_ptr->SampleVelocity());
 //        solver->SetMuPosition({0,0,0});
@@ -177,16 +171,16 @@ void RunManager::SolveOBETest() {
         solver->SetMuVelocity(Mu_ptr->GetInputVelocity(i));
 
 //        lsr_ptr->SetLinewidth(linewidth_arr[i%100]);
-        lsr_ptr->SetLinewidth(80);
+//        lsr_ptr->SetLinewidth(80);
 //        solver->SetDopplerShift(dopp_arr[i/100]);
 
         solver->solve();
 
         ROOT_ptr->SetEventID(i);
-        ROOT_ptr->SetLaserPars(lsr_ptr->GetEnergy(), lsr_ptr->GetEnergy355(), lsr_ptr->GetPulseTimeWidth(),
-                               lsr_ptr->GetSigmaX(), lsr_ptr->GetSigmaY(),
-                               lsr_ptr->GetPeakIntensity(solver->GetMuPosition()),
-                               lsr_ptr->GetPeakIntensity355(solver->GetMuPosition()), lsr_ptr->GetLinewidth());
+//        ROOT_ptr->SetLaserPars(lsr_ptr->GetEnergy(), lsr_ptr->GetEnergy355(), lsr_ptr->GetPulseTimeWidth(),
+//                               lsr_ptr->GetSigmaX(), lsr_ptr->GetSigmaY(),
+//                               lsr_ptr->GetPeakIntensity(solver->GetMuPosition()),
+//                               lsr_ptr->GetPeakIntensity355(solver->GetMuPosition()), lsr_ptr->GetLinewidth());
         ROOT_ptr->SetDoppFreq(solver->GetDopplerShift());
         ROOT_ptr->SetPosition(solver->GetMuPosition());
         ROOT_ptr->SetVelocity(solver->GetMuVelocity());

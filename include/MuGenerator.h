@@ -12,6 +12,7 @@
 #include <string>
 #include <sstream>
 
+class RunManager;
 
 class MuGenerator {
 public:
@@ -30,8 +31,6 @@ public:
 
     Double_t GetTemperature(){return temperature;}; // in Kelvin
 
-    void SetRndSeed(UInt_t rndseed){randGen.SetSeed(rndseed);};
-
     TVector3 SampleVelocity();  // in m/s
 
     TVector3 SampleLocation();  // in mm
@@ -42,11 +41,11 @@ public:
 
 private:
     // Private constructor and destructor
-    MuGenerator(): randGen(0){temperature=322; };
+    MuGenerator();
     ~MuGenerator(){};
 
     Double_t temperature;
-    TRandom randGen;
+//    TRandom randGen;
 
     const Double_t k_B = 1.380649e-23; // Boltzmann constant in J/K
     const Double_t m_Mu = 1.8926410106e-28;  // Muonium mass in kg

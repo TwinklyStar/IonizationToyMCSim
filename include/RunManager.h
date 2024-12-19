@@ -29,6 +29,10 @@ public:
     void SolveOBETest();
     void parTestBench();
 
+    // Random generator
+    TRandom rdm_gen;
+    void SetRdmSeed(int s) {rdm_gen.SetSeed(s);};
+
 private:
     // Private constructor for Singleton
     RunManager();
@@ -44,6 +48,7 @@ private:
     double linewidth_122 = 0.0, sigma_x_122 = 0.0, sigma_y_122 = 0.0;
     double offset_x_122 = 0.0, offset_y_122 = 0.0, offset_z_122 = 0.0;
     double yaw_122 = 0.0, pitch_122 = 0.0, roll_122 = 0.0;
+    int rdm_seed = 0;
 
     // Variables for AddLaser355 command
     double pulse_energy_355 = 0.0, pulse_FWHM_355 = 0.0, peak_time_355 = 0.0;
