@@ -64,9 +64,15 @@ void RunManager::ReadCommandFile(const std::string& file_path) {
 
         } else if (command == "MuInputFile") {
             iss >> input_file_name;
+            std::cout << "-- RunManager: Input file: " << input_file_name << std::endl;
         } else if (command == "OutputFile") {
             iss >> output_file_name;
+            std::cout << "-- RunManager: Output file: " << output_file_name << std::endl;
             ROOT_ptr->SetOutFileName(output_file_name);
+        } else if (command == "SetRunTime"){
+            iss >> runtime;
+            solver->SetEndTime(runtime);
+            std::cout << "-- RunManager: Set simulation time: " << runtime << " ns" << std::endl;
         } else if (command == "RootOutput") {
             iss >> sub_command >> last_word;
             if (sub_command == "t") {
@@ -102,7 +108,7 @@ void RunManager::ReadCommandFile(const std::string& file_path) {
 
     InitializeMuGenerator();
     InitializeRootManager();
-    InitializeOBEsolver();
+//    InitializeOBEsolver();
 }
 
 void RunManager::InitializeMuGenerator() {

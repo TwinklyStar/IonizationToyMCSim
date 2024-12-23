@@ -1,8 +1,12 @@
 # This is a test script for ionization program
 
 # AddLaser  pulse_energy pulse_FWHM peak_time linewidth sigma_x sigma_y offset_x offset_y offset_z yaw pitch roll
+#           J            ns         ns        GHz       mm      mm      mm       mm       mm       deg deg   deg
 AddLaser122 13.5e-6      2          5         80        4       1       0       0         2        0   0     0
 AddLaser355 8e-3         2          5         80        4       1       0       0         2        0   0     0
+
+# Set simulation end time (in ns)
+SetRunTime 10
 
 # Set input muonium file: position and velocity
 MuInputFile ../datasets/test1k.dat
