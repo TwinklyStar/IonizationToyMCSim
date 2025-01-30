@@ -95,9 +95,9 @@ void RunManager::InitializeLaserGenerator() {
     lsr_ptr->SetSigmaX(sigma_x_122);
     lsr_ptr->SetSigmaY(sigma_y_122);
     lsr_ptr->SetLaserOffset({offset_x_122, offset_y_122, offset_z_122});
-    lsr_ptr->SetYawAngle(yaw_122 * TMath::Pi() / 180);
-    lsr_ptr->SetPitchAngle(pitch_122 * TMath::Pi() / 180);
-    lsr_ptr->SetRollAngle(roll_122 * TMath::Pi() / 180);
+    lsr_ptr->SetYawAngle(yaw_122);
+    lsr_ptr->SetPitchAngle(pitch_122);
+    lsr_ptr->SetRollAngle(roll_122);
 
     lsr_ptr->SetEnergy355(pulse_energy_355);
 //    lsr_ptr->SetPulseFWHM355(pulse_FWHM_355);
@@ -105,9 +105,9 @@ void RunManager::InitializeLaserGenerator() {
 //    lsr_ptr->SetSigmaX355(sigma_x_355);
 //    lsr_ptr->SetSigmaY355(sigma_y_355);
     lsr_ptr->SetLaserOffset355({offset_x_355, offset_y_355, offset_z_355});
-    lsr_ptr->SetYawAngle355(yaw_355 * TMath::Pi() / 180);
-    lsr_ptr->SetPitchAngle355(pitch_355 * TMath::Pi() / 180);
-    lsr_ptr->SetRollAngle355(roll_355 * TMath::Pi() / 180);
+    lsr_ptr->SetYawAngle355(yaw_355);
+    lsr_ptr->SetPitchAngle355(pitch_355);
+    lsr_ptr->SetRollAngle355(roll_355);
     lsr_ptr->UpdateRotMat();
 }
 
