@@ -275,7 +275,7 @@ void LaserGenerator::AddLaser122(Double_t energy, Double_t pulse_FWHM, Double_t 
         << "  Wavevector direction (unit vector): (" << lsr_tmp.laser_dirc.X() << ", "
         << lsr_tmp.laser_dirc.Y() << ", "
         << lsr_tmp.laser_dirc.Z() << ")\n"
-        << "  Rotation matrix: " << lsr_tmp.rot_mat << std::endl;
+        << "  Rotation matrix:\n" << lsr_tmp.rot_mat << std::endl;
 
     cout << oss.str();
 
@@ -322,7 +322,7 @@ void LaserGenerator::AddLaser355(Double_t energy, Double_t pulse_FWHM, Double_t 
         << "  Wavevector direction (unit vector): (" << lsr_tmp.laser_dirc.X() << ", "
         << lsr_tmp.laser_dirc.Y() << ", "
         << lsr_tmp.laser_dirc.Z() << ")\n"
-        << "  Rotation matrix: " << lsr_tmp.rot_mat << std::endl;
+        << "  Rotation matrix:\n" << lsr_tmp.rot_mat << std::endl;
 
     cout << oss.str();
 
