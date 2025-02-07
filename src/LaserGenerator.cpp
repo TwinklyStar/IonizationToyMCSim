@@ -246,9 +246,9 @@ void LaserGenerator::AddLaser122(Double_t energy, Double_t pulse_FWHM, Double_t 
     lsr_tmp.sigma_y = sigma_y;
     lsr_tmp.tau = 0.4247 * pulse_FWHM;
     lsr_tmp.laser_offset = {offset_x, offset_y, offset_z};
-    lsr_tmp.yaw = yaw;
-    lsr_tmp.pitch = pitch;
-    lsr_tmp.roll = roll;
+    lsr_tmp.yaw = yaw * TMath::Pi() / 180;
+    lsr_tmp.pitch = pitch * TMath::Pi() / 180;
+    lsr_tmp.roll = roll * TMath::Pi() / 180;
     lsr_tmp.wavelength = 122;
     lsr_tmp.laser_k = 2*TMath::Pi()/lsr_tmp.wavelength*1e9;
     lsr_tmp.cen_freq = 299792458/lsr_tmp.wavelength;
@@ -268,9 +268,9 @@ void LaserGenerator::AddLaser122(Double_t energy, Double_t pulse_FWHM, Double_t 
         << "  Offset (X, Y, Z): (" << lsr_tmp.laser_offset.X() << ", "
         << lsr_tmp.laser_offset.Y() << ", "
         << lsr_tmp.laser_offset.Z() << ") mm\n"
-        << "  Yaw: " << lsr_tmp.yaw << " deg\n"
-        << "  Pitch: " << lsr_tmp.pitch << " deg\n"
-        << "  Roll: " << lsr_tmp.roll << " deg\n"
+        << "  Yaw: " << yaw << " deg\n"
+        << "  Pitch: " << pitch << " deg\n"
+        << "  Roll: " << roll << " deg\n"
 //        << "  Wavevector (k): " << lsr_tmp.laser_k << " m^-1\n"
         << "  Wavevector direction (unit vector): (" << lsr_tmp.laser_dirc.X() << ", "
         << lsr_tmp.laser_dirc.Y() << ", "
@@ -293,9 +293,9 @@ void LaserGenerator::AddLaser355(Double_t energy, Double_t pulse_FWHM, Double_t 
     lsr_tmp.sigma_y = sigma_y;
     lsr_tmp.tau = 0.4247 * pulse_FWHM;
     lsr_tmp.laser_offset = {offset_x, offset_y, offset_z};
-    lsr_tmp.yaw = yaw;
-    lsr_tmp.pitch = pitch;
-    lsr_tmp.roll = roll;
+    lsr_tmp.yaw = yaw * TMath::Pi() / 180;
+    lsr_tmp.pitch = pitch * TMath::Pi() / 180;
+    lsr_tmp.roll = roll * TMath::Pi() / 180;
     lsr_tmp.wavelength = 122;
     lsr_tmp.laser_k = 2*TMath::Pi()/lsr_tmp.wavelength*1e9;
     lsr_tmp.cen_freq = 299792458/lsr_tmp.wavelength;
@@ -315,9 +315,9 @@ void LaserGenerator::AddLaser355(Double_t energy, Double_t pulse_FWHM, Double_t 
         << "  Offset (X, Y, Z): (" << lsr_tmp.laser_offset.X() << ", "
         << lsr_tmp.laser_offset.Y() << ", "
         << lsr_tmp.laser_offset.Z() << ") mm\n"
-        << "  Yaw: " << lsr_tmp.yaw << " deg\n"
-        << "  Pitch: " << lsr_tmp.pitch << " deg\n"
-        << "  Roll: " << lsr_tmp.roll << " deg\n"
+        << "  Yaw: " << yaw << " deg\n"
+        << "  Pitch: " << pitch << " deg\n"
+        << "  Roll: " << roll << " deg\n"
 //        << "  Wavevector (k): " << lsr_tmp.laser_k << " m^-1\n"
         << "  Wavevector direction (unit vector): (" << lsr_tmp.laser_dirc.X() << ", "
         << lsr_tmp.laser_dirc.Y() << ", "
