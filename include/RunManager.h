@@ -58,7 +58,7 @@ private:
     double yaw_355 = 0.0, pitch_355 = 0.0, roll_355 = 0.0;
 
     // Variables for MuInputFile and OutputFile commands
-    std::string input_file_name, output_file_name;
+    std::string input_Mu, input_file_name, output_file_name;
 
     // Progress bar
     void loader(int rate);

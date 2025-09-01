@@ -62,6 +62,10 @@ void RunManager::ReadCommandFile(const std::string& file_path) {
                                  offset_x_355, offset_y_355, offset_z_355,
                                  yaw_355, pitch_355, roll_355);
 
+        } else if (command == "InputMuPar") {
+            iss >> input_Mu;
+            std::cout << "-- RunManager: Input Muonium parameter: " << input_Mu << std::endl;
+            Mu_ptr->SetIfInputMu(input_Mu);
         } else if (command == "MuInputFile") {
             iss >> input_file_name;
             std::cout << "-- RunManager: Input file: " << input_file_name << std::endl;

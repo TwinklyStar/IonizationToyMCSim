@@ -32,10 +32,10 @@ TVector3 MuGenerator::SampleLocation() {
     LaserGenerator &lsr = LaserGenerator::GetInstance();
     RunManager &RM = RunManager::GetInstance();
 
-    return {0,
-            RM.rdm_gen.Uniform(-3*lsr.GetSigmaX(), 3*lsr.GetSigmaX()),
-            RM.rdm_gen.Uniform(-3*lsr.GetSigmaY(), 3*lsr.GetSigmaY())};
-//    return {0,0,0};
+//    return {0,
+//            RM.rdm_gen.Uniform(-3*lsr.GetSigmaX(), 3*lsr.GetSigmaX()),
+//            RM.rdm_gen.Uniform(-3*lsr.GetSigmaY(), 3*lsr.GetSigmaY())};
+    return {0,0,0};
 }
 
 void MuGenerator::ReadInputFile(std::string infile) {
@@ -46,50 +46,65 @@ void MuGenerator::ReadInputFile(std::string infile) {
         return;
     }
 
-    std::string line;
-    // Read each line of the file
-    while (std::getline(file, line)) {
-        std::stringstream ss(line);
-        double value1, value2, value3, value4, value5, value6;
+    if (input_Mu){
+        std::string line;
+        // Read each line of the file
+        while (std::getline(file, line)) {
+            std::stringstream ss(line);
+            double value1, value2, value3, value4, value5, value6;
 
-        // Extract the six values from the line, separated by tabs
-        if (ss >> value1 >> value2 >> value3 >> value4 >> value5 >> value6) {
-            input_x.push_back(value1);
-            input_y.push_back(value2);
-            input_z.push_back(value3);
-            input_vx.push_back(value4/1e3);
-            input_vy.push_back(value5/1e3);
-            input_vz.push_back(value6/1e3);
-        } else {
-            std::cerr << "Error reading line: " << line << std::endl;
-            return;
+            // Extract the six values from the line, separated by tabs
+            if (ss >> value1 >> value2 >> value3 >> value4 >> value5 >> value6) {
+                input_x.push_back(value1);
+                input_y.push_back(value2);
+                input_z.push_back(value3);
+                input_vx.push_back(value4/1e3);
+                input_vy.push_back(value5/1e3);
+                input_vz.push_back(value6/1e3);
+            } else {
+                std::cerr << "Error reading line: " << line << std::endl;
+                return;
+            }
         }
-    }
 
-    file.close();
-    input_n = input_x.size();
+        file.close();
+        input_n = input_x.size();
+    }
+    else {
+        std::string line;
+        std::getline(file, line);
+        std::stringstream ss(line);
+        ss >> input_n;
+        std::cout << "Generate Mu in simulation. Event number: " << input_n << std::endl;
+    }
 }
 
 TVector3 MuGenerator::GetInputLocation(int i) {
-    if (input_n == 0){
-        std::cerr << "MuGenerator::GetInputLocation: Input file not registered yet. Return {0,0,0}" << std::endl;
-        return {0,0,0};
+    if (input_Mu){
+        if (input_n == 0){
+            std::cerr << "MuGenerator::GetInputLocation: Input file not registered yet. Return {0,0,0}" << std::endl;
+            return {0,0,0};
+        }
+        if (i >= input_n){
+            std::cerr << "MuGenerator::GetInputLocation: index " << i << " exceeds total number " << input_n << ". Return {0,0,0}" << std::endl;
+            return {0,0,0};
+        }
+        return {input_x.at(i), input_y.at(i), input_z.at(i)};
     }
-    if (i >= input_n){
-        std::cerr << "MuGenerator::GetInputLocation: index " << i << " exceeds total number " << input_n << ". Return {0,0,0}" << std::endl;
-        return {0,0,0};
-    }
-    return {input_x.at(i), input_y.at(i), input_z.at(i)};
+    else return SampleLocation();
 }
 
 TVector3 MuGenerator::GetInputVelocity(int i) {
-    if (input_n == 0){
-        std::cerr << "MuGenerator::GetInputVelocity: Input file not registered yet. Return {0,0,0}" << std::endl;
-        return {0,0,0};
+    if (input_Mu){
+        if (input_n == 0){
+            std::cerr << "MuGenerator::GetInputVelocity: Input file not registered yet. Return {0,0,0}" << std::endl;
+            return {0,0,0};
+        }
+        if (i >= input_n){
+            std::cerr << "MuGenerator::GetInputVelocity: index " << i << " exceeds total number " << input_n << ". Return {0,0,0}" << std::endl;
+            return {0,0,0};
+        }
+        return {input_vx.at(i), input_vy.at(i), input_vz.at(i)};
     }
-    if (i >= input_n){
-        std::cerr << "MuGenerator::GetInputVelocity: index " << i << " exceeds total number " << input_n << ". Return {0,0,0}" << std::endl;
-        return {0,0,0};
-    }
-    return {input_vx.at(i), input_vy.at(i), input_vz.at(i)};
+    else return SampleVelocity();
 }
