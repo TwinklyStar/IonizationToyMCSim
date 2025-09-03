@@ -48,9 +48,8 @@ void OBEsolver::OBE(const state_type &rho, state_type &drhodt, const Double_t t)
 }
 
 complex<Double_t> OBEsolver::GetRabiFreq(const Double_t t) {
-    Double_t e_field_y = laser_ptr->GetFieldE(Mu_pos, t).Y();  // in V/mm, assume only linearly polarized in y direction
-    return 6.0189 * e_field_y * pow(10, -2);    // Return frequency in GHz
-
+    Double_t e_field = laser_ptr->GetFieldE(Mu_pos, t).Mag();  // in V/mm, assume only linearly polarized
+    return 6.0189 * e_field * pow(10, -2);    // Return frequency in GHz
 }
 
 Double_t OBEsolver::GetDopplerShift() {
@@ -77,7 +76,9 @@ void OBEsolver::solve() {
 
 void OBEsolver::Observer(const state_type &rho, Double_t t) {
 //    std::cout << rho[0].real() << " ";
-    ROOT_ptr->PushTimePoint(t, laser_ptr->GetFieldE(Mu_pos, t).Mag(), GetRabiFreq(t).real(),
+    ROOT_ptr->PushTimePoint(t, laser_ptr->GetFieldE(Mu_pos, t).Mag(),
+                            laser_ptr->GetIntensity(Mu_pos, t), laser_ptr->GetIntensity355(Mu_pos, t),
+                            GetRabiFreq(t).real(),
                             rho[0].real(), rho[1].real(),
                             rho[2].real(), rho[2].imag(), rho[3].real(), GetGammaIon(t));
 }

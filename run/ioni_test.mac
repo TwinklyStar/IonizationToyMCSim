@@ -1,21 +1,32 @@
 # This is a test script for ionization program
 
 # AddLaser  pulse_energy pulse_FWHM peak_time linewidth sigma_x sigma_y offset_x offset_y offset_z yaw pitch roll
-AddLaser122 13.5e-6      2          5         80        4       1       0       0         2        0   0     0
-AddLaser355 8e-3         2          5         80        4       1       0       0         2        0   0     0
+#           J            ns         ns        GHz       mm      mm      mm       mm       mm       deg deg   deg
+AddLaser122 13.5e-6      2          5         80        4       1       0       0.0         2        0   0     0
+AddLaser355 8e-3         2          5         80        4       1       0       0.0         2        0   0     0
 
+# Set simulation end time (in ns)
+SetRunTime 10
+
+# Set input muonium file: position and velocity
+InputMuPar	on
 MuInputFile ../datasets/test1k.dat
 
-# Turn off long array to save space
-RootOutput t off 
-RootOutput RabiFreq off
-RootOutput EField off
-RootOutput GammaIon off
-RootOutput rho_gg off
-RootOutput rho_ee off
-RootOutput rho_ge_r off
-RootOutput rho_ge_i off
-RootOutput rho_ion off
+# Set random seed
+RandomSeed 999
 
-OutputFile data/OBEmacro_test.root
+# Turn off long array to save space
+RootOutput t on 
+RootOutput RabiFreq on
+RootOutput EField on
+RootOutput Intensity122 on
+RootOutput Intensity355 on
+RootOutput GammaIon on
+RootOutput rho_gg on
+RootOutput rho_ee on
+RootOutput rho_ge_r on
+RootOutput rho_ge_i on
+RootOutput rho_ion on
+
+OutputFile data/g2edmIoni_testnew.root
 

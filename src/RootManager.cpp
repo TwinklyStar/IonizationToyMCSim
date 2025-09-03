@@ -3,6 +3,7 @@
 //
 
 #include "RootManager.h"
+#include "RunManager.h"
 
 void RootManager::Initialize() {
     std::cout << "--- Output file name: " << outfile_name << std::endl;
@@ -18,19 +19,21 @@ void RootManager::Initialize() {
     output_tree->Branch("vx", &vx);
     output_tree->Branch("vy", &vy);
     output_tree->Branch("vz", &vz);
-    output_tree->Branch("PulseEnergy", &pulse_energy);
-    output_tree->Branch("PulseEnergy355", &pulse_energy_355);
-    output_tree->Branch("LineWidth", &linewidth);
-    output_tree->Branch("LaserSigmaT", &laser_sigmat);
-    output_tree->Branch("LaserSigmaX", &laser_sigmax);
-    output_tree->Branch("LaserSigmaY", &laser_sigmay);
-    output_tree->Branch("PeakIntensity", &peak_intensity);
-    output_tree->Branch("PeakIntensity355", &peak_intensity_355);
+//    output_tree->Branch("PulseEnergy", &pulse_energy);
+//    output_tree->Branch("PulseEnergy355", &pulse_energy_355);
+//    output_tree->Branch("LineWidth", &linewidth);
+//    output_tree->Branch("LaserSigmaT", &laser_sigmat);
+//    output_tree->Branch("LaserSigmaX", &laser_sigmax);
+//    output_tree->Branch("LaserSigmaY", &laser_sigmay);
+//    output_tree->Branch("PeakIntensity", &peak_intensity);
+//    output_tree->Branch("PeakIntensity355", &peak_intensity_355);
     output_tree->Branch("DoppFreq", &dopp_freq);
     output_tree->Branch("Step_n", &step_n);
     if (IftOn)          output_tree->Branch("t", &t);
     if (IfRabiFreqOn)   output_tree->Branch("RabiFreq", &rabi_freq);
     if (IfEFieldOn)     output_tree->Branch("EField", &E_field);
+    if (IfIntensity122On)output_tree->Branch("Intensity122", &intensity_122);
+    if (IfIntensity355On)output_tree->Branch("Intensity355", &intensity_355);
     if (IfGammaIonOn)   output_tree->Branch("GammaIon", &gamma_ion);
     if (Ifrho_ggOn)     output_tree->Branch("rho_gg", &rho_gg);
     if (Ifrho_eeOn)     output_tree->Branch("rho_ee", &rho_ee);
@@ -41,12 +44,16 @@ void RootManager::Initialize() {
     output_tree->Branch("LastRho_ee", &last_rho_ee);
     output_tree->Branch("LastRho_ion", &last_rho_ion);
     output_tree->Branch("IfIonized", &if_ionized);
+    output_tree->Branch("IoniTime", &ioni_time);
 }
 
-void RootManager::PushTimePoint(Double_t tt, Double_t tE_field, Double_t trabi_freq, Double_t trho_gg, Double_t trho_ee,
+void RootManager::PushTimePoint(Double_t tt, Double_t tE_field, Double_t tintensity_122, Double_t tintensity_355,
+                                Double_t trabi_freq, Double_t trho_gg, Double_t trho_ee,
                                 Double_t trho_ge_r, Double_t trho_ge_i, Double_t trho_ion, Double_t tgamma_ion) {
     t.push_back(tt);
     E_field.push_back(tE_field);
+    intensity_122.push_back(tintensity_122);
+    intensity_355.push_back(tintensity_355);
     rabi_freq.push_back(trabi_freq);
     rho_gg.push_back(trho_gg);
     rho_ee.push_back(trho_ee);
@@ -73,10 +80,19 @@ void RootManager::SetLastState() {
     last_rho_ee=rho_ee.back();
     last_rho_ion=rho_ion.back();
 
-    if(randGen.Uniform()<last_rho_ion)
+    TGraph gtemp(t.size(), rho_ion.data(), t.data());
+
+    RunManager &RM = RunManager::GetInstance();
+    Double_t uni_0to1 = RM.rdm_gen.Uniform();
+
+    if(uni_0to1<last_rho_ion){
         if_ionized = 1;
-    else
+        ioni_time = gtemp.Eval(uni_0to1);
+    }
+    else {
         if_ionized = 0;
+        ioni_time = -1;
+    }
 }
 
 void RootManager::FillEvent() {
@@ -85,6 +101,8 @@ void RootManager::FillEvent() {
     t.clear();
     rabi_freq.clear();
     E_field.clear();
+    intensity_122.clear();
+    intensity_355.clear();
     rho_gg.clear();
     rho_ee.clear();
     rho_ge_r.clear();
@@ -94,6 +112,8 @@ void RootManager::FillEvent() {
 
     rabi_freq.shrink_to_fit();
     E_field.shrink_to_fit();
+    intensity_122.shrink_to_fit();
+    intensity_355.shrink_to_fit();
     rho_gg.shrink_to_fit();
     rho_ee.shrink_to_fit();
     rho_ge_r.shrink_to_fit();

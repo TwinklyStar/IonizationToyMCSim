@@ -12,6 +12,7 @@
 #include <string>
 #include <sstream>
 
+class RunManager;
 
 class MuGenerator {
 public:
@@ -24,13 +25,13 @@ public:
 
     void SetTemperature(Double_t temp){temperature=temp;}; // in Kelvin
 
+    void SetIfInputMu(const std::string& in){input_Mu = in=="on";}
+
     void ReadInputFile(std::string infile);
 
     int GetInputEventNum(){return input_n;};
 
     Double_t GetTemperature(){return temperature;}; // in Kelvin
-
-    void SetRndSeed(UInt_t rndseed){randGen.SetSeed(rndseed);};
 
     TVector3 SampleVelocity();  // in m/s
 
@@ -42,14 +43,16 @@ public:
 
 private:
     // Private constructor and destructor
-    MuGenerator(): randGen(0){temperature=322; };
+    MuGenerator();
     ~MuGenerator(){};
 
     Double_t temperature;
-    TRandom randGen;
+//    TRandom randGen;
 
     const Double_t k_B = 1.380649e-23; // Boltzmann constant in J/K
     const Double_t m_Mu = 1.8926410106e-28;  // Muonium mass in kg
+
+    bool input_Mu = true;
 
     int input_n=0;
     std::vector<Double_t> input_x;
