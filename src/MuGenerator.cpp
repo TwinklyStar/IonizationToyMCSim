@@ -32,10 +32,10 @@ TVector3 MuGenerator::SampleLocation() {
     LaserGenerator &lsr = LaserGenerator::GetInstance();
     RunManager &RM = RunManager::GetInstance();
 
-//    return {0,
-//            RM.rdm_gen.Uniform(-3*lsr.GetSigmaX(), 3*lsr.GetSigmaX()),
-//            RM.rdm_gen.Uniform(-3*lsr.GetSigmaY(), 3*lsr.GetSigmaY())};
-    return {0,0,0};
+    return {0,
+            RM.rdm_gen.Uniform(-3*lsr.GetSigmaX(), 3*lsr.GetSigmaX()),
+            RM.rdm_gen.Uniform(-3*lsr.GetSigmaY(), 3*lsr.GetSigmaY())};
+//    return {0,0,0};
 }
 
 void MuGenerator::ReadInputFile(std::string infile) {
