@@ -25,7 +25,9 @@ public:
 
     void SetTemperature(Double_t temp){temperature=temp;}; // in Kelvin
 
-    void SetIfInputMu(const std::string& in){input_Mu = in=="on";}
+    void SetIfInputMu(const std::string& in){input_Mu = !(in=="off");}
+
+    void SetEventN(std::string n) {event_n = n;}
 
     void ReadInputFile(std::string infile);
 
@@ -53,6 +55,7 @@ private:
     const Double_t m_Mu = 1.8926410106e-28;  // Muonium mass in kg
 
     bool input_Mu = true;
+    std::string event_n;
 
     int input_n=0;
     std::vector<Double_t> input_x;

@@ -73,6 +73,10 @@ void RunManager::ReadCommandFile(const std::string& file_path) {
             iss >> output_file_name;
             std::cout << "-- RunManager: Output file: " << output_file_name << std::endl;
             ROOT_ptr->SetOutFileName(output_file_name);
+        } else if (command == "EventN") {
+            iss >> event_n;
+            std::cout << "-- RunManager: Event number: " << event_n << std::endl;
+            Mu_ptr->SetEventN(event_n);
         } else if (command == "SetRunTime"){
             iss >> runtime;
             solver->SetEndTime(runtime);
@@ -149,6 +153,7 @@ void RunManager::SolveOBE() {
 //                               lsr_ptr->GetSigmaX(), lsr_ptr->GetSigmaY(),
 //                               lsr_ptr->GetPeakIntensity(solver->GetMuPosition()),
 //                               lsr_ptr->GetPeakIntensity355(solver->GetMuPosition()), lsr_ptr->GetLinewidth());
+//        ROOT_ptr->SetLaserPars(lsr_ptr->GetPeakIntensity(solver->GetMuPosition()), lsr_ptr->GetPeakIntensity355(solver->GetMuPosition()));
         ROOT_ptr->SetDoppFreq(solver->GetDopplerShift());
         ROOT_ptr->SetPosition(solver->GetMuPosition());
         ROOT_ptr->SetVelocity(solver->GetMuVelocity());

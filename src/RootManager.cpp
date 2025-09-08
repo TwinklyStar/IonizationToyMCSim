@@ -28,6 +28,8 @@ void RootManager::Initialize() {
 //    output_tree->Branch("PeakIntensity", &peak_intensity);
 //    output_tree->Branch("PeakIntensity355", &peak_intensity_355);
     output_tree->Branch("DoppFreq", &dopp_freq);
+    output_tree->Branch("PeakIntensity122", &peak_intensity);
+    output_tree->Branch("PeakIntensity355", &peak_intensity_355);
     output_tree->Branch("Step_n", &step_n);
     if (IftOn)          output_tree->Branch("t", &t);
     if (IfRabiFreqOn)   output_tree->Branch("RabiFreq", &rabi_freq);
@@ -53,7 +55,9 @@ void RootManager::PushTimePoint(Double_t tt, Double_t tE_field, Double_t tintens
     t.push_back(tt);
     E_field.push_back(tE_field);
     intensity_122.push_back(tintensity_122);
+    peak_intensity = TMath::Max(peak_intensity, tintensity_122);
     intensity_355.push_back(tintensity_355);
+    peak_intensity_355 = TMath::Max(peak_intensity_355, tintensity_355);
     rabi_freq.push_back(trabi_freq);
     rho_gg.push_back(trho_gg);
     rho_ee.push_back(trho_ee);
@@ -73,6 +77,11 @@ void RootManager::SetLaserPars(Double_t E, Double_t E_355, Double_t sigmat, Doub
     peak_intensity = intensity;
     peak_intensity_355 = intensity_355;
     linewidth = linw;
+}
+
+void RootManager::SetLaserPars(Double_t intensity, Double_t intensity_355) {
+    peak_intensity = intensity;
+    peak_intensity_355 = intensity_355;
 }
 
 void RootManager::SetLastState() {
@@ -109,6 +118,9 @@ void RootManager::FillEvent() {
     rho_ge_i.clear();
     rho_ion.clear();
     gamma_ion.clear();
+
+    peak_intensity = 0;
+    peak_intensity_355 = 0;
 
     rabi_freq.shrink_to_fit();
     E_field.shrink_to_fit();

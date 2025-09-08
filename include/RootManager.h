@@ -38,6 +38,7 @@ public:
     void SetDoppFreq(Double_t shift){dopp_freq=shift/TMath::Pi()/2;};
     void SetLaserPars(Double_t E, Double_t E_355, Double_t sigmat, Double_t sigmax, Double_t sigmay, Double_t intensity,
                       Double_t intensity_355, Double_t linw);
+    void SetLaserPars(Double_t intensity, Double_t intensity_355);
     void PushTimePoint(Double_t tt, Double_t tE_field, Double_t tintensity_122, Double_t tintensity_355, Double_t trabi_freq,
                        Double_t trho_gg, Double_t trho_ee,
                        Double_t trho_ge_r, Double_t trho_ge_i, Double_t trho_ion, Double_t tgamma_ion);
@@ -69,8 +70,8 @@ private:
     Double_t laser_sigmat;
     Double_t laser_sigmax;
     Double_t laser_sigmay;
-    Double_t peak_intensity;
-    Double_t peak_intensity_355;
+    Double_t peak_intensity=0;
+    Double_t peak_intensity_355=0;
     Double_t linewidth;
     Int_t step_n;
     std::vector<Double_t> t;

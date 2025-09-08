@@ -33,8 +33,8 @@ TVector3 MuGenerator::SampleLocation() {
     RunManager &RM = RunManager::GetInstance();
 
     return {0,
-            RM.rdm_gen.Uniform(-3*lsr.GetSigmaX(), 3*lsr.GetSigmaX()),
-            RM.rdm_gen.Uniform(-3*lsr.GetSigmaY(), 3*lsr.GetSigmaY())};
+            RM.rdm_gen.Uniform(-1.5*lsr.GetSigmaX(), 1.5*lsr.GetSigmaX()),
+            RM.rdm_gen.Uniform(-1.5*lsr.GetSigmaY(), 1.5*lsr.GetSigmaY())};
 //    return {0,0,0};
 }
 
@@ -68,13 +68,15 @@ void MuGenerator::ReadInputFile(std::string infile) {
         }
 
         file.close();
-        input_n = input_x.size();
+        if (event_n == "max")
+            input_n = input_x.size();
+        else {
+            input_n = min((int)input_x.size(), (int)std::atoi(event_n.c_str()));
+        }
+        std::cout << "Input muonium parameter from data. Event number: " << input_n << std::endl;
     }
     else {
-        std::string line;
-        std::getline(file, line);
-        std::stringstream ss(line);
-        ss >> input_n;
+        input_n = std::atoi(event_n.c_str());
         std::cout << "Generate Mu in simulation. Event number: " << input_n << std::endl;
     }
 }

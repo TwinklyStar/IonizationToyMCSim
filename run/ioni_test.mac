@@ -11,6 +11,7 @@ SetRunTime 10
 # Set input muonium file: position and velocity
 InputMuPar	on
 MuInputFile ../datasets/test1k.dat
+EventN      2930
 
 # Set random seed
 RandomSeed 999
