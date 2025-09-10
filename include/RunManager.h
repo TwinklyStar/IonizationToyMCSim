@@ -48,6 +48,7 @@ private:
     double linewidth_122 = 0.0, sigma_x_122 = 0.0, sigma_y_122 = 0.0;
     double offset_x_122 = 0.0, offset_y_122 = 0.0, offset_z_122 = 0.0;
     double yaw_122 = 0.0, pitch_122 = 0.0, roll_122 = 0.0;
+    double detuning = 0.0;
     int rdm_seed = 0;
     double runtime;
 

@@ -237,7 +237,7 @@ void LaserGenerator::UpdateRotMat(Laser &lsr) {
 
 void LaserGenerator::AddLaser122(Double_t energy, Double_t pulse_FWHM, Double_t peak_time, Double_t linewidth,
                                  Double_t sigma_x, Double_t sigma_y, Double_t offset_x, Double_t offset_y,
-                                 Double_t offset_z, Double_t yaw, Double_t pitch, Double_t roll) {
+                                 Double_t offset_z, Double_t yaw, Double_t pitch, Double_t roll, Double_t detuning) {
     Laser lsr_tmp;
     lsr_tmp.energy = energy;
     lsr_tmp.linewidth = linewidth;
@@ -252,6 +252,7 @@ void LaserGenerator::AddLaser122(Double_t energy, Double_t pulse_FWHM, Double_t 
     lsr_tmp.wavelength = 122;
     lsr_tmp.laser_k = 2*TMath::Pi()/lsr_tmp.wavelength*1e9;
     lsr_tmp.cen_freq = 299792458/lsr_tmp.wavelength;
+    lsr_tmp.detuning = detuning;
 
     UpdateRotMat(lsr_tmp);
 
@@ -271,6 +272,7 @@ void LaserGenerator::AddLaser122(Double_t energy, Double_t pulse_FWHM, Double_t 
         << "  Yaw: " << yaw << " deg\n"
         << "  Pitch: " << pitch << " deg\n"
         << "  Roll: " << roll << " deg\n"
+        << "  Detuning: " << detuning << " GHz\n"
 //        << "  Wavevector (k): " << lsr_tmp.laser_k << " m^-1\n"
         << "  Wavevector direction (unit vector): (" << lsr_tmp.laser_dirc.X() << ", "
         << lsr_tmp.laser_dirc.Y() << ", "

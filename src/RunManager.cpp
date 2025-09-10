@@ -40,13 +40,12 @@ void RunManager::ReadCommandFile(const std::string& file_path) {
             iss >> pulse_energy_122 >> pulse_FWHM_122 >> peak_time_122
                 >> linewidth_122 >> sigma_x_122 >> sigma_y_122
                 >> offset_x_122 >> offset_y_122 >> offset_z_122
-                >> yaw_122 >> pitch_122 >> roll_122;
+                >> yaw_122 >> pitch_122 >> roll_122 >> detuning;
 
             lsr_ptr->AddLaser122(pulse_energy_122, pulse_FWHM_122, peak_time_122,
                                  linewidth_122, sigma_x_122, sigma_y_122,
                                  offset_x_122, offset_y_122, offset_z_122,
-                                 yaw_122, pitch_122, roll_122);
-
+                                 yaw_122, pitch_122, roll_122, detuning);
         } else if (command == "RandomSeed") {
             iss >> rdm_seed;
             rdm_gen.SetSeed(rdm_seed);

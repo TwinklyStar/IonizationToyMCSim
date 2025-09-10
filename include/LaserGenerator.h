@@ -27,6 +27,7 @@ public:
         Eigen::Matrix3d rot_mat_rev = Eigen::Matrix3d::Identity();
 
         Double_t cen_freq;
+        Double_t detuning;
         Double_t laser_k;       // in m^-1
         TVector3 laser_dirc;
     };
@@ -42,7 +43,7 @@ public:
     void AddLaser122(Double_t energy, Double_t pulse_FWHM, Double_t peak_time,
                      Double_t linewidth, Double_t sigma_x, Double_t sigma_y,
                      Double_t offset_x, Double_t offset_y, Double_t offset_z,
-                     Double_t yaw, Double_t pitch, Double_t roll);
+                     Double_t yaw, Double_t pitch, Double_t roll, Double_t detuning);
     void AddLaser355(Double_t energy, Double_t pulse_FWHM, Double_t peak_time,
                      Double_t linewidth, Double_t sigma_x, Double_t sigma_y,
                      Double_t offset_x, Double_t offset_y, Double_t offset_z,
@@ -80,6 +81,7 @@ public:
     Double_t GetPeakIntensity(TVector3 r);      // in W/cm^2
     Double_t GetPeakIntensity355(TVector3 r);   // in W/cm^2
     TVector3 GetWaveVector(){return vec_laser122.front().laser_k*vec_laser122.front().laser_dirc;};   // in m^-1
+    Double_t GetDetuning(){return  vec_laser122.front().detuning;}  // in GHz
 
     TVector3 GetFieldE(TVector3 r, Double_t t); // in V/mm
     Double_t GetIntensity(TVector3 r, Double_t t);    // in W/cm^2
