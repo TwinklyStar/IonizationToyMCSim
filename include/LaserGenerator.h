@@ -48,8 +48,8 @@ public:
                      Double_t linewidth, Double_t sigma_x, Double_t sigma_y,
                      Double_t offset_x, Double_t offset_y, Double_t offset_z,
                      Double_t yaw, Double_t pitch, Double_t roll);
-//    void SetEnergy(Double_t E){energy=E;};  // in J
-//    void SetEnergy355(Double_t E){energy_355=E;};   // in J
+    void SetEnergy(Double_t E){for (auto &itr : vec_laser122) itr.energy=E;};  // in J
+    void SetEnergy355(Double_t E){for (auto &itr : vec_laser355) itr.energy=E;};   // in J
 //    void SetLinewidth(Double_t l){linewidth=l;};    // in GHz
 //    void SetSigmaX(Double_t x){sigma_x=x;}; // in mm
 //    void SetSigmaY(Double_t y){sigma_y=y;}; // in mm

@@ -76,10 +76,15 @@ void RunManager::ReadCommandFile(const std::string& file_path) {
             iss >> event_n;
             std::cout << "-- RunManager: Event number: " << event_n << std::endl;
             Mu_ptr->SetEventN(event_n);
-        } else if (command == "SetRunTime"){
+        } else if (command == "SetRunTime") {
             iss >> runtime;
             solver->SetEndTime(runtime);
             std::cout << "-- RunManager: Set simulation time: " << runtime << " ns" << std::endl;
+        } else if (command == "SetDopplerShift"){
+            double dopp;
+            iss >> dopp;
+            solver->SetDopplerShift(dopp);
+            std::cout << "-- RunManager: Fix doppler shift to : " << dopp << " rad/ns" << std::endl;
         } else if (command == "RootOutput") {
             iss >> sub_command >> last_word;
             if (sub_command == "t") {
@@ -170,23 +175,24 @@ void RunManager::SolveOBETest() {
     for(int i=0; i<eventn; i++){
         if (eventn >= 100 && i % (eventn/100) == 0) loader(i/(eventn/100));
 
-//        Double_t linewidth_arr[100];
-//        Double_t dopp_arr[100];
-//        for (int j=0; j<100; j++){
-//            linewidth_arr[j] = j;
-//            dopp_arr[j] = -100 + j*200/100.;
-//        }
-//        lsr_ptr->SetEnergy(10e-6);
+        Double_t linewidth_arr[100];
+        Double_t energy_arr[100];
+        Double_t dopp_arr[100];
+        for (int j=0; j<100; j++){
+            energy_arr[j] = j *0.01 * 20e-6;
+            dopp_arr[j] = 2*TMath::Pi()*(-150 + j*300/100.);
+        }
+        lsr_ptr->SetEnergy(energy_arr[i%100]);
 //        solver->SetMuPosition(Mu_ptr->SampleLocation());
 //        solver->SetMuVelocity(Mu_ptr->SampleVelocity());
-//        solver->SetMuPosition({0,0,0});
+        solver->SetMuPosition({0,0,2});
 //        solver->SetMuVelocity({0,0,0});
-        solver->SetMuPosition(Mu_ptr->GetInputLocation(i));
-        solver->SetMuVelocity(Mu_ptr->GetInputVelocity(i));
+//        solver->SetMuPosition(Mu_ptr->GetInputLocation(i));
+//        solver->SetMuVelocity(Mu_ptr->GetInputVelocity(i));
 
 //        lsr_ptr->SetLinewidth(linewidth_arr[i%100]);
 //        lsr_ptr->SetLinewidth(80);
-//        solver->SetDopplerShift(dopp_arr[i/100]);
+        solver->SetDopplerShift(dopp_arr[i/100]);
 
         solver->solve();
 

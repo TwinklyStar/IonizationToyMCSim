@@ -24,6 +24,7 @@ int main(int argc, char* argv[]) {
     RM_ptr->ReadCommandFile(macro_file_path);
 
     RM_ptr->SolveOBE();
+//    RM_ptr->SolveOBETest();
 
     std::cout << "\nSimulation completed." << std::endl;
     return 0;
