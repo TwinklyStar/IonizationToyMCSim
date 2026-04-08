@@ -192,7 +192,7 @@ void RunManager::SolveOBETest() {
 
 //        lsr_ptr->SetLinewidth(linewidth_arr[i%100]);
 //        lsr_ptr->SetLinewidth(80);
-        solver->SetDopplerShift(dopp_arr[i/100]);
+        solver->SetDopplerShift(dopp_arr[i/100]);   // detuning scanning
 
         solver->solve();
 

@@ -56,7 +56,7 @@ Double_t OBEsolver::GetDopplerShift() {
     if (!if_set_dopp)
         return -Mu_v.Dot(laser_ptr->GetWaveVector())*1e-9 + 2*TMath::Pi()*laser_ptr->GetDetuning();
     else
-        return detuning;
+        return 2*TMath::Pi()*detuning;
 
 }
 
