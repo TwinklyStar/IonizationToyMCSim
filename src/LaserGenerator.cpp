@@ -116,9 +116,10 @@ void LaserGenerator::PrecomputeAtPosition(TVector3 r) {
         double exp_s_E = exp(-(x*x)/sx2 - (y*y)/sy2);
         double pre_E = sqrt(2.0 * sqrt(2.0) * eta * lsr.energy / (pi32 * lsr.sigma_x * lsr.sigma_y * lsr.tau * 1e-9));
         cached_Espatial_122[i] = pre_E * exp_s_E;
-        // Intensity: exp(-2*(x²/σx² + y²/σy²)) = exp_s_E²
+        // Intensity: exp(-2*(x²/σx² + y²/σy²)) — computed directly to match original formula
+        double exp_s_I = exp(-2.0*(x*x)/sx2 - 2.0*(y*y)/sy2);
         double pre_I = (2.0 * lsr.energy) / (sqrt(2.0 * TMath::Pi()) * TMath::Pi() * lsr.sigma_x * lsr.sigma_y * lsr.tau * 1e-9);
-        cached_Ispatial_122[i] = pre_I * exp_s_E * exp_s_E;
+        cached_Ispatial_122[i] = pre_I * exp_s_I;
     }
 
     cached_Ispatial_355.resize(vec_laser355.size());

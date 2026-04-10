@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 17)
 # eigen3
 find_package (Eigen3 REQUIRED)
 
-include_directories(${EIGEN3_INCLUDE_DIRS})
+include_directories(${EIGEN3_INCLUDE_DIR})
 
 if(NOT Eigen3_FOUND)
     message(FATAL_ERROR "Could not find eigen3!")
