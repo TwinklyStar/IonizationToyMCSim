@@ -33,5 +33,5 @@ RootOutput rho_ge_r on
 RootOutput rho_ge_i on
 RootOutput rho_ion on
 
-OutputFile data/g2edmIoni_testDetuning.root
+OutputFile data/g2edmIoni_test.root
 
