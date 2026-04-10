@@ -26,7 +26,10 @@ public:
     void SetStartTime(Double_t t){start_time=t;};
     void SetEndTime(Double_t t){end_time=t;};
     void SetDt(Double_t t){dt=t;};
-    void SetMuPosition(TVector3 pos){Mu_pos = pos;}
+    void SetMuPosition(TVector3 pos){
+        Mu_pos = pos;
+        laser_ptr->PrecomputeAtPosition(pos);  // cache spatial Gaussian factors for this event
+    }
     void SetMuVelocity(TVector3 v){Mu_v = v;}
     void SetInitialState(Double_t rho_gg, Double_t rho_ee, Double_t rho_eg, Double_t rho_ion){
         initial_rho[0] = rho_gg;
@@ -67,6 +70,13 @@ private:
     Double_t detuning=0;
 
     state_type initial_rho; // rho_ee, gg, eg, ion
+
+    // Cached values filled by OBE() at each step; read by Observer() to avoid recomputation
+    complex<Double_t> cached_Omega_t  = 0;
+    Double_t          cached_gamma_ion = 0;
+    Double_t          cached_E_field   = 0;
+    Double_t          cached_I_122     = 0;
+    Double_t          cached_I_355     = 0;
 
     void OBE(const state_type &rho, state_type &drhodt, const Double_t t);
     void Observer(const state_type &rho, Double_t t);

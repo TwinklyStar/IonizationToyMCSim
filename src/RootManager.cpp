@@ -124,15 +124,8 @@ void RootManager::FillEvent() {
     peak_intensity = 0;
     peak_intensity_355 = 0;
 
-    rabi_freq.shrink_to_fit();
-    E_field.shrink_to_fit();
-    intensity_122.shrink_to_fit();
-    intensity_355.shrink_to_fit();
-    rho_gg.shrink_to_fit();
-    rho_ee.shrink_to_fit();
-    rho_ge_r.shrink_to_fit();
-    rho_ge_i.shrink_to_fit();
-    gamma_ion.shrink_to_fit();
+    // shrink_to_fit() removed: clear() retains capacity for reuse next event,
+    // avoiding a malloc/free roundtrip on every event.
 }
 
 RootManager& RootManager::GetInstance() {

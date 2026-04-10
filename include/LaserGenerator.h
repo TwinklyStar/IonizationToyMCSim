@@ -69,6 +69,10 @@ public:
 
     void UpdateRotMat(Laser &lsr);
 
+    // Precompute position-dependent (but time-independent) factors for the current event.
+    // Must be called once per event whenever the muonium position changes.
+    void PrecomputeAtPosition(TVector3 r);
+
     void SetOBESolverPtr(OBEsolver *ptr){obe_ptr=ptr;};
 
 //    Double_t GetEnergy(){return energy;};
@@ -110,7 +114,14 @@ private:
     LaserGenerator();
     ~LaserGenerator(){};
 
-    TVector3 BeamToLaserCoord(TVector3 r, Laser lsr); // Transform from target coordinate to laser coordinate
+    TVector3 BeamToLaserCoord(TVector3 r, const Laser& lsr); // Transform from target coordinate to laser coordinate
+
+    // Per-event cached spatial factors, populated by PrecomputeAtPosition().
+    // Each entry is (prefactor * exp_space) for the corresponding laser in the vector.
+    // E-field and intensity use different prefactor forms, so separate caches are kept.
+    std::vector<Double_t> cached_Espatial_122;   // for GetFieldE (E-field amplitude)
+    std::vector<Double_t> cached_Ispatial_122;   // for GetIntensity (122 nm)
+    std::vector<Double_t> cached_Ispatial_355;   // for GetIntensity355 (355 nm)
 //    TVector3 BeamToLaserCoord355(TVector3 r); // Transform from target coordinate to laser coordinate
 
     OBEsolver *obe_ptr;

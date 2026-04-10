@@ -10,7 +10,7 @@ SetRunTime 10
 
 # Set doppler shift (in 2pi * GHz)
 # Caution: once set, the doppler shift will be fixed to this value
-SetDopplerShift 62.83
+# SetDopplerShift 0
 
 # Set input muonium file: position and velocity
 InputMuPar	on

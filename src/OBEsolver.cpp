@@ -28,28 +28,33 @@ void OBEsolver::OBE(const state_type &rho, state_type &drhodt, const Double_t t)
     complex<Double_t> rho_ee = rho[1];  // ρ_ee
     complex<Double_t> rho_ge = rho[2];  // ρ_ge (coherence term)
     complex<Double_t> rho_eg = conj(rho_ge); // ρ_eg (conjugate of ρ_ge)
-    complex<Double_t> rho_ion = rho[3]; // ρ_ion (ionization)
 
-    // Time-dependent detuning and Rabi frequency
-    complex<Double_t> Omega_t = GetRabiFreq(t);
+    // Time-dependent Rabi frequency and ionization rate; cache for Observer
+    cached_Omega_t  = GetRabiFreq(t);
+    cached_gamma_ion = GetGammaIon(t);
+    // Cache field/intensity values so Observer does not recompute them
+    cached_E_field   = laser_ptr->GetFieldE(Mu_pos, t).Mag();
+    cached_I_122     = laser_ptr->GetIntensity(Mu_pos, t);
+    cached_I_355     = laser_ptr->GetIntensity355(Mu_pos, t);
+
     Double_t delta_t = GetDopplerShift();
 
-    Double_t gamma_ion = GetGammaIon(t);
-
     // transverse decoherence
-    Double_t gamma_2 = gamma_1/2 + gamma_ion/2 + laser_ptr->GetLinewidth()*TMath::Pi();
+    Double_t gamma_2 = gamma_1/2 + cached_gamma_ion/2 + laser_ptr->GetLinewidth()*TMath::Pi();
 
-    // Equations based on the system provided
-    drhodt[0] = gamma_1 * rho_ee + (complex<Double_t>(0.0, 0.5)) * (conj(Omega_t) * rho_eg - Omega_t * rho_ge);
-    drhodt[1] = -(gamma_1 + gamma_ion) * rho_ee - (complex<Double_t>(0.0, 0.5)) * (conj(Omega_t) * rho_eg - Omega_t * rho_ge);
-    drhodt[2] = -(gamma_2 + complex<Double_t>(0.0, 1.0) * delta_t + gamma_ion / 2.0) * rho_ge
-                + (complex<Double_t>(0.0, 0.5)) * conj(Omega_t) * (rho_ee - rho_gg);
-    drhodt[3] = gamma_ion * rho_ee; // dρ_ion/dt
+    // stim_term appears in both drhodt[0] and drhodt[1]
+    complex<Double_t> stim_term = conj(cached_Omega_t) * rho_eg - cached_Omega_t * rho_ge;
+
+    drhodt[0] = gamma_1 * rho_ee + complex<Double_t>(0.0, 0.5) * stim_term;
+    drhodt[1] = -(gamma_1 + cached_gamma_ion) * rho_ee - complex<Double_t>(0.0, 0.5) * stim_term;
+    drhodt[2] = -(gamma_2 + complex<Double_t>(0.0, 1.0) * delta_t + cached_gamma_ion / 2.0) * rho_ge
+                + complex<Double_t>(0.0, 0.5) * conj(cached_Omega_t) * (rho_ee - rho_gg);
+    drhodt[3] = cached_gamma_ion * rho_ee; // dρ_ion/dt
 }
 
 complex<Double_t> OBEsolver::GetRabiFreq(const Double_t t) {
     Double_t e_field = laser_ptr->GetFieldE(Mu_pos, t).Mag();  // in V/mm, assume only linearly polarized
-    return 6.0189 * e_field * pow(10, -2);    // Return frequency in GHz
+    return 6.0189e-2 * e_field;    // Return frequency in GHz
 }
 
 Double_t OBEsolver::GetDopplerShift() {
@@ -75,12 +80,12 @@ void OBEsolver::solve() {
 }
 
 void OBEsolver::Observer(const state_type &rho, Double_t t) {
-//    std::cout << rho[0].real() << " ";
-    ROOT_ptr->PushTimePoint(t, laser_ptr->GetFieldE(Mu_pos, t).Mag(),
-                            laser_ptr->GetIntensity(Mu_pos, t), laser_ptr->GetIntensity355(Mu_pos, t),
-                            GetRabiFreq(t).real(),
+    // Use values cached by the last OBE() call — no recomputation needed
+    ROOT_ptr->PushTimePoint(t, cached_E_field,
+                            cached_I_122, cached_I_355,
+                            cached_Omega_t.real(),
                             rho[0].real(), rho[1].real(),
-                            rho[2].real(), rho[2].imag(), rho[3].real(), GetGammaIon(t));
+                            rho[2].real(), rho[2].imag(), rho[3].real(), cached_gamma_ion);
 }
 
 Double_t OBEsolver::GetGammaIon(Double_t t) {

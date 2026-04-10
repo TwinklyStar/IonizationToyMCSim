@@ -24,157 +24,114 @@ LaserGenerator::LaserGenerator() {
 
 TVector3 LaserGenerator::GetFieldE(TVector3 r, Double_t t) {
     double Ex=0, Ey=0, Ez=0;
-    for (auto lsr : vec_laser122){
-        TVector3 laser_r = BeamToLaserCoord(r, lsr);
-        Double_t x = laser_r.X();
-        Double_t y = laser_r.Y();
-        Double_t z = laser_r.Z();
+    for (size_t i = 0; i < vec_laser122.size(); ++i) {
+        const Laser& lsr = vec_laser122[i];
+        // Temporal Gaussian only — spatial part precomputed in cached_Espatial_122
+        double exp_time = exp(-((t - lsr.peak_time) * (t - lsr.peak_time)) / (4.0 * lsr.tau * lsr.tau));
+        double E = cached_Espatial_122[i] * exp_time;
 
-        const Double_t eta = 376.7303134;
+        Eigen::Vector3d before_rot(E, 0, 0);
+        Eigen::Vector3d after_rot = lsr.rot_mat_rev * before_rot;
 
-        Double_t prefactor = sqrt(2.0 * sqrt(2.0) * eta * lsr.energy / (pow(TMath::Pi(), 3.0 / 2.0) * lsr.sigma_x * lsr.sigma_y  * lsr.tau *
-                                                                    pow(10, -9)));      // convert ns to s
-
-        // Compute the spatial Gaussian components
-        double exp_space = exp(-(x * x) / (lsr.sigma_x * lsr.sigma_x) - (y * y) / (lsr.sigma_y * lsr.sigma_y));
-
-        // Compute the temporal Gaussian component
-        double exp_time = exp(-((t-lsr.peak_time) * (t-lsr.peak_time)) / (4.0 * lsr.tau * lsr.tau));
-
-        // Combine everything to compute the electric field
-        double E = prefactor * exp_space * exp_time;
-
-        Eigen::MatrixXd before_rot(3,1);
-        before_rot << E,
-                      0,
-                      0;
-
-        Eigen::MatrixXd after_rot = lsr.rot_mat_rev*before_rot;
-
-        Ex += after_rot(2, 0);
-        Ey += after_rot(0, 0);
-        Ez += after_rot(1, 0);
-
+        Ex += after_rot(2);
+        Ey += after_rot(0);
+        Ez += after_rot(1);
     }
-//    double E = prefactor * exp_space;
-
     return {Ex, Ey, Ez};   // x-polarized in muonium coordinate
 }
 
 Double_t LaserGenerator::GetPeakIntensity(TVector3 r) {
     Double_t sum_I=0;
-    for (auto lsr : vec_laser122) {
+    for (const auto& lsr : vec_laser122) {
         TVector3 laser_r = BeamToLaserCoord(r, lsr);
         Double_t x = laser_r.X();
         Double_t y = laser_r.Y();
-        Double_t z = laser_r.Z();
 
-        const Double_t eta = 376.7303134;
-
-        // Define the prefactor
         double prefactor =
-                (2.0 * lsr.energy) / (sqrt(2.0 * TMath::Pi()) * TMath::Pi() * lsr.sigma_x * lsr.sigma_y * lsr.tau * pow(10, -9));
-
-        // Compute the spatial Gaussian components
+                (2.0 * lsr.energy) / (sqrt(2.0 * TMath::Pi()) * TMath::Pi() * lsr.sigma_x * lsr.sigma_y * lsr.tau * 1e-9);
         double exp_space = exp(-2.0 * (x * x) / (lsr.sigma_x * lsr.sigma_x) - 2.0 * (y * y) / (lsr.sigma_y * lsr.sigma_y));
-
-        // Combine everything to compute the intensity
-        double I = prefactor * exp_space * 100; // convert W/mm^2 to W/cm^2
-
-        sum_I += I;
+        sum_I += prefactor * exp_space * 100; // convert W/mm^2 to W/cm^2
     }
-    return sum_I; // Return the intensity
+    return sum_I;
 }
 
 Double_t LaserGenerator::GetPeakIntensity355(TVector3 r) {
     Double_t sum_I=0;
-    for (auto lsr : vec_laser355) {
+    for (const auto& lsr : vec_laser355) {
         TVector3 laser_r = BeamToLaserCoord(r, lsr);
         Double_t x = laser_r.X();
         Double_t y = laser_r.Y();
-        Double_t z = laser_r.Z();
 
-        // Define the prefactor
         double prefactor =
-                (2.0 * lsr.energy) / (sqrt(2.0 * TMath::Pi()) * TMath::Pi() * lsr.sigma_x * lsr.sigma_y * lsr.tau * pow(10, -9));
-
-        // Compute the spatial Gaussian components
+                (2.0 * lsr.energy) / (sqrt(2.0 * TMath::Pi()) * TMath::Pi() * lsr.sigma_x * lsr.sigma_y * lsr.tau * 1e-9);
         double exp_space = exp(-2.0 * (x * x) / (lsr.sigma_x * lsr.sigma_x) - 2.0 * (y * y) / (lsr.sigma_y * lsr.sigma_y));
-
-        // Combine everything to compute the intensity
-        double I = prefactor * exp_space * 100; // convert W/mm^2 to W/cm^2
-
-        sum_I += I;
+        sum_I += prefactor * exp_space * 100; // convert W/mm^2 to W/cm^2
     }
-    return sum_I; // Return the intensity
+    return sum_I;
 }
 
 Double_t LaserGenerator::GetIntensity(TVector3 r, Double_t t) {
     Double_t sum_I=0;
-    for (auto lsr : vec_laser122) {
-        TVector3 laser_r = BeamToLaserCoord(r, lsr);
-        Double_t x = laser_r.X();
-        Double_t y = laser_r.Y();
-        Double_t z = laser_r.Z();
-
-        // Define the prefactor
-        double prefactor =
-                (2.0 * lsr.energy) / (sqrt(2.0 * TMath::Pi()) * TMath::Pi() * lsr.sigma_x * lsr.sigma_y * lsr.tau * pow(10, -9));
-
-        // Compute the spatial Gaussian components
-        double exp_space = exp(-2.0 * (x * x) / (lsr.sigma_x * lsr.sigma_x) - 2.0 * (y * y) / (lsr.sigma_y * lsr.sigma_y));
-
-        // Compute the temporal Gaussian component
+    for (size_t i = 0; i < vec_laser122.size(); ++i) {
+        const Laser& lsr = vec_laser122[i];
+        // Temporal Gaussian only — spatial part precomputed in cached_Ispatial_122
         double exp_time = exp(-((t - lsr.peak_time) * (t - lsr.peak_time)) / (2.0 * lsr.tau * lsr.tau));
-
-        // Combine everything to compute the intensity
-        double I = prefactor * exp_space * exp_time * 100;
-
-        sum_I += I;
+        sum_I += cached_Ispatial_122[i] * exp_time * 100;
     }
-    return sum_I; // Return the intensity
+    return sum_I;
 }
 
 Double_t LaserGenerator::GetIntensity355(TVector3 r, Double_t t) {
     Double_t sum_I=0;
-    for (auto lsr : vec_laser355) {
-        TVector3 laser_r = BeamToLaserCoord(r, lsr);
-        Double_t x = laser_r.X();
-        Double_t y = laser_r.Y();
-        Double_t z = laser_r.Z();
-
-        // Define the prefactor
-        double prefactor =
-                (2.0 * lsr.energy) / (sqrt(2.0 * TMath::Pi()) * TMath::Pi() * lsr.sigma_x * lsr.sigma_y * lsr.tau * pow(10, -9));
-
-        // Compute the spatial Gaussian components
-        double exp_space = exp(-2.0 * (x * x) / (lsr.sigma_x * lsr.sigma_x) - 2.0 * (y * y) / (lsr.sigma_y * lsr.sigma_y));
-
-        // Compute the temporal Gaussian component
+    for (size_t i = 0; i < vec_laser355.size(); ++i) {
+        const Laser& lsr = vec_laser355[i];
+        // Temporal Gaussian only — spatial part precomputed in cached_Ispatial_355
         double exp_time = exp(-((t - lsr.peak_time) * (t - lsr.peak_time)) / (2.0 * lsr.tau * lsr.tau));
-
-        // Combine everything to compute the intensity
-        double I = prefactor * exp_space * exp_time * 100;
-
-        sum_I += I;
+        sum_I += cached_Ispatial_355[i] * exp_time * 100;
     }
-
-    return sum_I; // Return the intensity
+    return sum_I;
 }
 
-TVector3 LaserGenerator::BeamToLaserCoord(TVector3 r, Laser lsr) {
-    Double_t x = r.Y() - lsr.laser_offset.Y();
-    Double_t y = r.Z() - lsr.laser_offset.Z();
-    Double_t z = r.X() - lsr.laser_offset.X();
+TVector3 LaserGenerator::BeamToLaserCoord(TVector3 r, const Laser& lsr) {
+    Eigen::Vector3d v(r.Y() - lsr.laser_offset.Y(),
+                      r.Z() - lsr.laser_offset.Z(),
+                      r.X() - lsr.laser_offset.X());
+    Eigen::Vector3d vr = lsr.rot_mat * v;
+    return {vr(0), vr(1), vr(2)};
+}
 
-    Eigen::MatrixXd before_rot(3,1);
-    before_rot << x,
-                  y,
-                  z;
+void LaserGenerator::PrecomputeAtPosition(TVector3 r) {
+    const Double_t eta = 376.7303134;
+    const Double_t pi32 = TMath::Pi() * sqrt(TMath::Pi());  // π^(3/2)
 
-    Eigen::MatrixXd after_rot = lsr.rot_mat*before_rot;
+    cached_Espatial_122.resize(vec_laser122.size());
+    cached_Ispatial_122.resize(vec_laser122.size());
+    for (size_t i = 0; i < vec_laser122.size(); ++i) {
+        const Laser& lsr = vec_laser122[i];
+        TVector3 lr = BeamToLaserCoord(r, lsr);
+        double x = lr.X(), y = lr.Y();
+        double sx2 = lsr.sigma_x * lsr.sigma_x;
+        double sy2 = lsr.sigma_y * lsr.sigma_y;
+        // E-field: exp(-(x²/σx² + y²/σy²))
+        double exp_s_E = exp(-(x*x)/sx2 - (y*y)/sy2);
+        double pre_E = sqrt(2.0 * sqrt(2.0) * eta * lsr.energy / (pi32 * lsr.sigma_x * lsr.sigma_y * lsr.tau * 1e-9));
+        cached_Espatial_122[i] = pre_E * exp_s_E;
+        // Intensity: exp(-2*(x²/σx² + y²/σy²)) = exp_s_E²
+        double pre_I = (2.0 * lsr.energy) / (sqrt(2.0 * TMath::Pi()) * TMath::Pi() * lsr.sigma_x * lsr.sigma_y * lsr.tau * 1e-9);
+        cached_Ispatial_122[i] = pre_I * exp_s_E * exp_s_E;
+    }
 
-    return {after_rot(0,0), after_rot(1,0), after_rot(2,0)};
+    cached_Ispatial_355.resize(vec_laser355.size());
+    for (size_t i = 0; i < vec_laser355.size(); ++i) {
+        const Laser& lsr = vec_laser355[i];
+        TVector3 lr = BeamToLaserCoord(r, lsr);
+        double x = lr.X(), y = lr.Y();
+        double sx2 = lsr.sigma_x * lsr.sigma_x;
+        double sy2 = lsr.sigma_y * lsr.sigma_y;
+        double exp_s = exp(-(x*x)/sx2 - (y*y)/sy2);
+        double pre_I = (2.0 * lsr.energy) / (sqrt(2.0 * TMath::Pi()) * TMath::Pi() * lsr.sigma_x * lsr.sigma_y * lsr.tau * 1e-9);
+        cached_Ispatial_355[i] = pre_I * exp_s * exp_s;
+    }
 }
 
 //TVector3 LaserGenerator::BeamToLaserCoord355(TVector3 r) {
@@ -223,13 +180,10 @@ void LaserGenerator::UpdateRotMat(Laser &lsr) {
              0, 0, 1;
     lsr.rot_mat_rev = Y_rev*P_rev*R_rev;
 
-    Eigen::MatrixXd laser_dirc_beforerot(3,1);
-    laser_dirc_beforerot << 0,
-            0,
-            1;
-    Eigen::MatrixXd after_rot = lsr.rot_mat_rev*laser_dirc_beforerot;
+    Eigen::Vector3d laser_dirc_beforerot(0, 0, 1);
+    Eigen::Vector3d after_rot = lsr.rot_mat_rev * laser_dirc_beforerot;
 
-    lsr.laser_dirc = {after_rot(2,0), after_rot(0,0), after_rot(1,0)};
+    lsr.laser_dirc = {after_rot(2), after_rot(0), after_rot(1)};
 
 //    std::cout << "--- Rotation matrix updated.\n122nm:\n" << rot_mat_122 << "\n355nm:\n" << rot_mat_355 << std::endl;
 //    std::cout << "The 122nm wave vector direction:\n" << laser_dirc.X() << ", " << laser_dirc.Y() << ", " << laser_dirc.Z() << std::endl;
