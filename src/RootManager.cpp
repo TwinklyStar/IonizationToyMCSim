@@ -8,8 +8,8 @@
 void RootManager::Initialize() {
     std::cout << "--- Output file name: " << outfile_name << std::endl;
     output_file = TFile::Open(outfile_name, "RECREATE");
-    if (! output_file->IsOpen())
-        throw std::runtime_error("Failed to open file: " + outfile_name);
+    if (!output_file || !output_file->IsOpen())
+        throw std::runtime_error("RootManager::Initialize: failed to open output file: \"" + outfile_name + "\"");
     output_tree = new TTree("obe", "A tree storing parameters and time evolution of states");
 
     output_tree->Branch("EventID", &eventID);
@@ -85,6 +85,8 @@ void RootManager::SetLaserPars(Double_t intensity, Double_t intensity_355) {
 }
 
 void RootManager::SetLastState() {
+    if (t.empty())
+        throw std::runtime_error("RootManager::SetLastState: no time steps recorded for this event — ODE produced no output");
     last_rho_gg=rho_gg.back();
     last_rho_ee=rho_ee.back();
     last_rho_ion=rho_ion.back();

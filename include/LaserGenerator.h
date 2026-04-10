@@ -74,14 +74,32 @@ public:
 //    Double_t GetEnergy(){return energy;};
 //    Double_t GetEnergy355(){return energy_355;};
 //    Double_t GetLinewidth(){return linewidth;};
-    Double_t GetLinewidth(){return vec_laser122.front().linewidth;};
-    Double_t GetSigmaX(){return vec_laser122.front().sigma_x;};
-    Double_t GetSigmaY(){return vec_laser122.front().sigma_y;};
-    Double_t GetPulseTimeWidth(){return vec_laser122.front().tau;};
+    Double_t GetLinewidth(){
+        if (vec_laser122.empty()) throw std::runtime_error("LaserGenerator: no 122 nm laser configured");
+        return vec_laser122.front().linewidth;
+    }
+    Double_t GetSigmaX(){
+        if (vec_laser122.empty()) throw std::runtime_error("LaserGenerator: no 122 nm laser configured");
+        return vec_laser122.front().sigma_x;
+    }
+    Double_t GetSigmaY(){
+        if (vec_laser122.empty()) throw std::runtime_error("LaserGenerator: no 122 nm laser configured");
+        return vec_laser122.front().sigma_y;
+    }
+    Double_t GetPulseTimeWidth(){
+        if (vec_laser122.empty()) throw std::runtime_error("LaserGenerator: no 122 nm laser configured");
+        return vec_laser122.front().tau;
+    }
     Double_t GetPeakIntensity(TVector3 r);      // in W/cm^2
     Double_t GetPeakIntensity355(TVector3 r);   // in W/cm^2
-    TVector3 GetWaveVector(){return vec_laser122.front().laser_k*vec_laser122.front().laser_dirc;};   // in m^-1
-    Double_t GetDetuning(){return  vec_laser122.front().detuning;}  // in GHz
+    TVector3 GetWaveVector(){
+        if (vec_laser122.empty()) throw std::runtime_error("LaserGenerator: no 122 nm laser configured");
+        return vec_laser122.front().laser_k * vec_laser122.front().laser_dirc;
+    }   // in m^-1
+    Double_t GetDetuning(){
+        if (vec_laser122.empty()) throw std::runtime_error("LaserGenerator: no 122 nm laser configured");
+        return vec_laser122.front().detuning;
+    }  // in GHz
 
     TVector3 GetFieldE(TVector3 r, Double_t t); // in V/mm
     Double_t GetIntensity(TVector3 r, Double_t t);    // in W/cm^2

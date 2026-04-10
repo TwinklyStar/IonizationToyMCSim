@@ -12,6 +12,7 @@
 #include <vector>
 #include <string>
 #include <complex>
+#include <stdexcept>
 #include <boost/numeric/odeint.hpp>
 #include <Eigen/Dense>
 #include "TVector3.h"

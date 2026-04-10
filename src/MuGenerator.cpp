@@ -41,10 +41,8 @@ TVector3 MuGenerator::SampleLocation() {
 void MuGenerator::ReadInputFile(std::string infile) {
     // Open the file
     std::ifstream file(infile);
-    if (!file.is_open()) {
-        std::cerr << "Error opening file " << infile << std::endl;
-        return;
-    }
+    if (!file.is_open())
+        throw std::runtime_error("MuGenerator::ReadInputFile: cannot open file: \"" + infile + "\"");
 
     if (input_Mu){
         std::string line;
@@ -62,8 +60,7 @@ void MuGenerator::ReadInputFile(std::string infile) {
                 input_vy.push_back(value5/1e3);
                 input_vz.push_back(value6/1e3);
             } else {
-                std::cerr << "Error reading line: " << line << std::endl;
-                return;
+                throw std::runtime_error("MuGenerator::ReadInputFile: failed to parse line: \"" + line + "\"");
             }
         }
 
@@ -83,14 +80,11 @@ void MuGenerator::ReadInputFile(std::string infile) {
 
 TVector3 MuGenerator::GetInputLocation(int i) {
     if (input_Mu){
-        if (input_n == 0){
-            std::cerr << "MuGenerator::GetInputLocation: Input file not registered yet. Return {0,0,0}" << std::endl;
-            return {0,0,0};
-        }
-        if (i >= input_n){
-            std::cerr << "MuGenerator::GetInputLocation: index " << i << " exceeds total number " << input_n << ". Return {0,0,0}" << std::endl;
-            return {0,0,0};
-        }
+        if (input_n == 0)
+            throw std::runtime_error("MuGenerator::GetInputLocation: input file was not loaded");
+        if (i >= input_n)
+            throw std::runtime_error("MuGenerator::GetInputLocation: index " + std::to_string(i) +
+                                     " out of range (total " + std::to_string(input_n) + ")");
         return {input_x.at(i), input_y.at(i), input_z.at(i)};
     }
     else return SampleLocation();
@@ -98,14 +92,11 @@ TVector3 MuGenerator::GetInputLocation(int i) {
 
 TVector3 MuGenerator::GetInputVelocity(int i) {
     if (input_Mu){
-        if (input_n == 0){
-            std::cerr << "MuGenerator::GetInputVelocity: Input file not registered yet. Return {0,0,0}" << std::endl;
-            return {0,0,0};
-        }
-        if (i >= input_n){
-            std::cerr << "MuGenerator::GetInputVelocity: index " << i << " exceeds total number " << input_n << ". Return {0,0,0}" << std::endl;
-            return {0,0,0};
-        }
+        if (input_n == 0)
+            throw std::runtime_error("MuGenerator::GetInputVelocity: input file was not loaded");
+        if (i >= input_n)
+            throw std::runtime_error("MuGenerator::GetInputVelocity: index " + std::to_string(i) +
+                                     " out of range (total " + std::to_string(input_n) + ")");
         return {input_vx.at(i), input_vy.at(i), input_vz.at(i)};
     }
     else return SampleVelocity();
