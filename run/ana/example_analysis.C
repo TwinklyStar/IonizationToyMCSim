@@ -72,9 +72,9 @@ void example_analysis(const char* filename = "../data/g2edmIoni_test.root") {
 
     // Per-timestep arrays (only present if enabled via RootOutput in the macro)
     // Check whether the branch exists before connecting to avoid errors.
-    std::vector<Double_t> t_arr, rabi_freq, E_field;
-    std::vector<Double_t> intensity_122, intensity_355, gamma_ion;
-    std::vector<Double_t> rho_gg, rho_ee, rho_ge_r, rho_ge_i, rho_ion;
+    std::vector<Double_t> *t_arr=0, *rabi_freq=0, *E_field=0;
+    std::vector<Double_t> *intensity_122=0, *intensity_355=0, *gamma_ion=0;
+    std::vector<Double_t> *rho_gg=0, *rho_ee=0, *rho_ge_r=0, *rho_ge_i=0, *rho_ion=0;
 
     bool has_t            = tree->GetBranch("t")            != nullptr;
     bool has_rabi         = tree->GetBranch("RabiFreq")     != nullptr;
@@ -125,15 +125,15 @@ void example_analysis(const char* filename = "../data/g2edmIoni_test.root") {
         if (if_ionized) n_ionized++;
 
         // --- Per-timestep information (if arrays were saved) ---
-        if (has_t && has_rho_ion && !t_arr.empty()) {
+        if (has_t && has_rho_ion && !t_arr->empty()) {
             // Example: print the density matrix evolution at a few time points
-            int n_steps = (int)t_arr.size();
+            int n_steps = (int)t_arr->size();
             std::cout << "  Time evolution (first/mid/last step):" << std::endl;
             for (int idx : {0, n_steps / 2, n_steps - 1}) {
-                std::cout << "    t=" << t_arr[idx] << " ns"
-                          << "  rho_gg=" << rho_gg[idx]
-                          << "  rho_ee=" << rho_ee[idx]
-                          << "  rho_ion=" << rho_ion[idx]
+                std::cout << "    t=" << t_arr->at(idx) << " ns"
+                          << "  rho_gg=" << rho_gg->at(idx)
+                          << "  rho_ee=" << rho_ee->at(idx)
+                          << "  rho_ion=" << rho_ion->at(idx)
                           << std::endl;
             }
         }
