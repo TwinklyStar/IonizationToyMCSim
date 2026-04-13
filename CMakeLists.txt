@@ -17,7 +17,7 @@ endif()
 #set(BOOST_INCLUDEDIR /opt/homebrew/Cellar/boost/1.86.0/include)
 #set(BOOST_LIBRARY_DIR /opt/homebrew/Cellar/boost/1.86.0/lib)
 
-find_package(Boost 1.86.0 COMPONENTS system filesystem REQUIRED)
+find_package(Boost 1.70.0 COMPONENTS system filesystem REQUIRED)
 
 include_directories(${Boost_INCLUDE_DIR})
 
