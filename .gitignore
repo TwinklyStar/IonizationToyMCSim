@@ -7,5 +7,6 @@
 /run/*
 !/run/ana/example_analysis.C
 !/run/ioni_test.mac
-/datasets
+/datasets/*
+!/datasets/test1k.dat
 /build
