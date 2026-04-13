@@ -42,5 +42,5 @@ file(GLOB HEADERS include/*.h)
 add_executable(IonizationToyMCSim ${SOURCES} ${HEADERS}
         include/RunManager.h
         src/RunManager.cpp)
-add_executable(TestHarmonic test/harmonic_oscillator.cpp)
+#add_executable(TestHarmonic test/harmonic_oscillator.cpp)  # TestHarmonic is no longer used
 
