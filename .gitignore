@@ -4,3 +4,7 @@
 /CLAUDE.md
 /BUGS.md
 /run/myana
+/run/*
+!/run/ana/example_analysis.C
+!/run/ioni_test.mac
+/datasets
