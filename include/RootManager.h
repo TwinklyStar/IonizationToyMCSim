@@ -31,6 +31,10 @@ public:
     void Setrho_ge_r(bool flag) {Ifrho_ge_rOn=flag;};
     void Setrho_ge_i(bool flag) {Ifrho_ge_iOn=flag;};
     void Setrho_ion(bool flag) {Ifrho_ionOn=flag;};
+    void SetLaserPars122(bool flag) {IfLaserPars122On=flag;};
+    void SetLaserPars355(bool flag) {IfLaserPars355On=flag;};
+    bool IsLaserPars122On() const {return IfLaserPars122On;};
+    bool IsLaserPars355On() const {return IfLaserPars355On;};
 
     void SetEventID(Int_t id){eventID=id;};
     void SetPosition(TVector3 r){x=r.X(); y=r.Y(); z=r.Z();};
@@ -42,6 +46,16 @@ public:
     void PushTimePoint(Double_t tt, Double_t tE_field, Double_t tintensity_122, Double_t tintensity_355, Double_t trabi_freq,
                        Double_t trho_gg, Double_t trho_ee,
                        Double_t trho_ge_r, Double_t trho_ge_i, Double_t trho_ion, Double_t tgamma_ion);
+    // Record the single 122nm/355nm laser's realized (nominal or jittered) parameter values
+    // for the current event. Call once per event, before FillEvent().
+    void SetLaser122Snapshot(Double_t energy, Double_t linewidth, Double_t peak_time,
+                             Double_t sigma_x, Double_t sigma_y, Double_t tau,
+                             Double_t offset_x, Double_t offset_y, Double_t offset_z,
+                             Double_t yaw, Double_t pitch, Double_t roll, Double_t detuning);
+    void SetLaser355Snapshot(Double_t energy, Double_t linewidth, Double_t peak_time,
+                             Double_t sigma_x, Double_t sigma_y, Double_t tau,
+                             Double_t offset_x, Double_t offset_y, Double_t offset_z,
+                             Double_t yaw, Double_t pitch, Double_t roll);
     void SetLastState();
     void FillEvent();
 
@@ -85,6 +99,17 @@ private:
     std::vector<Double_t> rho_ge_r;
     std::vector<Double_t> rho_ge_i;
     std::vector<Double_t> rho_ion;
+    // Per-event realized laser parameter snapshot for the single 122nm/355nm laser, written when
+    // IfLaserPars122On/IfLaserPars355On is set. Populated via SetLaser122Snapshot/SetLaser355Snapshot.
+    // Only one laser of each wavelength is supported (see the guard in RunManager::SolveOBE).
+    Double_t laser122_energy, laser122_linewidth, laser122_peak_time;
+    Double_t laser122_sigma_x, laser122_sigma_y, laser122_tau;
+    Double_t laser122_offset_x, laser122_offset_y, laser122_offset_z;
+    Double_t laser122_yaw, laser122_pitch, laser122_roll, laser122_detuning;
+    Double_t laser355_energy, laser355_linewidth, laser355_peak_time;
+    Double_t laser355_sigma_x, laser355_sigma_y, laser355_tau;
+    Double_t laser355_offset_x, laser355_offset_y, laser355_offset_z;
+    Double_t laser355_yaw, laser355_pitch, laser355_roll;
     Double_t last_rho_gg;
     Double_t last_rho_ee;
     Double_t last_rho_ion;
@@ -102,6 +127,8 @@ private:
     bool Ifrho_ge_rOn=true;
     bool Ifrho_ge_iOn=true;
     bool Ifrho_ionOn=true;
+    bool IfLaserPars122On=false;
+    bool IfLaserPars355On=false;
 
 
 };

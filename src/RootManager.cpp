@@ -42,6 +42,35 @@ void RootManager::Initialize() {
     if (Ifrho_ge_rOn)   output_tree->Branch("rho_ge_r", &rho_ge_r);
     if (Ifrho_ge_iOn)   output_tree->Branch("rho_ge_i", &rho_ge_i);
     if (Ifrho_ionOn)    output_tree->Branch("rho_ion", &rho_ion);
+    if (IfLaserPars122On) {
+        output_tree->Branch("Laser122_Energy", &laser122_energy);
+        output_tree->Branch("Laser122_Linewidth", &laser122_linewidth);
+        output_tree->Branch("Laser122_PeakTime", &laser122_peak_time);
+        output_tree->Branch("Laser122_SigmaX", &laser122_sigma_x);
+        output_tree->Branch("Laser122_SigmaY", &laser122_sigma_y);
+        output_tree->Branch("Laser122_Tau", &laser122_tau);
+        output_tree->Branch("Laser122_OffsetX", &laser122_offset_x);
+        output_tree->Branch("Laser122_OffsetY", &laser122_offset_y);
+        output_tree->Branch("Laser122_OffsetZ", &laser122_offset_z);
+        output_tree->Branch("Laser122_Yaw", &laser122_yaw);
+        output_tree->Branch("Laser122_Pitch", &laser122_pitch);
+        output_tree->Branch("Laser122_Roll", &laser122_roll);
+        output_tree->Branch("Laser122_Detuning", &laser122_detuning);
+    }
+    if (IfLaserPars355On) {
+        output_tree->Branch("Laser355_Energy", &laser355_energy);
+        output_tree->Branch("Laser355_Linewidth", &laser355_linewidth);
+        output_tree->Branch("Laser355_PeakTime", &laser355_peak_time);
+        output_tree->Branch("Laser355_SigmaX", &laser355_sigma_x);
+        output_tree->Branch("Laser355_SigmaY", &laser355_sigma_y);
+        output_tree->Branch("Laser355_Tau", &laser355_tau);
+        output_tree->Branch("Laser355_OffsetX", &laser355_offset_x);
+        output_tree->Branch("Laser355_OffsetY", &laser355_offset_y);
+        output_tree->Branch("Laser355_OffsetZ", &laser355_offset_z);
+        output_tree->Branch("Laser355_Yaw", &laser355_yaw);
+        output_tree->Branch("Laser355_Pitch", &laser355_pitch);
+        output_tree->Branch("Laser355_Roll", &laser355_roll);
+    }
     output_tree->Branch("LastRho_gg", &last_rho_gg);
     output_tree->Branch("LastRho_ee", &last_rho_ee);
     output_tree->Branch("LastRho_ion", &last_rho_ion);
@@ -65,6 +94,43 @@ void RootManager::PushTimePoint(Double_t tt, Double_t tE_field, Double_t tintens
     rho_ge_i.push_back(trho_ge_i);
     rho_ion.push_back(trho_ion);
     gamma_ion.push_back(tgamma_ion);
+}
+
+void RootManager::SetLaser122Snapshot(Double_t energy, Double_t linewidth, Double_t peak_time,
+                                      Double_t sigma_x, Double_t sigma_y, Double_t tau,
+                                      Double_t offset_x, Double_t offset_y, Double_t offset_z,
+                                      Double_t yaw, Double_t pitch, Double_t roll, Double_t detuning) {
+    laser122_energy = energy;
+    laser122_linewidth = linewidth;
+    laser122_peak_time = peak_time;
+    laser122_sigma_x = sigma_x;
+    laser122_sigma_y = sigma_y;
+    laser122_tau = tau;
+    laser122_offset_x = offset_x;
+    laser122_offset_y = offset_y;
+    laser122_offset_z = offset_z;
+    laser122_yaw = yaw;
+    laser122_pitch = pitch;
+    laser122_roll = roll;
+    laser122_detuning = detuning;
+}
+
+void RootManager::SetLaser355Snapshot(Double_t energy, Double_t linewidth, Double_t peak_time,
+                                      Double_t sigma_x, Double_t sigma_y, Double_t tau,
+                                      Double_t offset_x, Double_t offset_y, Double_t offset_z,
+                                      Double_t yaw, Double_t pitch, Double_t roll) {
+    laser355_energy = energy;
+    laser355_linewidth = linewidth;
+    laser355_peak_time = peak_time;
+    laser355_sigma_x = sigma_x;
+    laser355_sigma_y = sigma_y;
+    laser355_tau = tau;
+    laser355_offset_x = offset_x;
+    laser355_offset_y = offset_y;
+    laser355_offset_z = offset_z;
+    laser355_yaw = yaw;
+    laser355_pitch = pitch;
+    laser355_roll = roll;
 }
 
 void RootManager::SetLaserPars(Double_t E, Double_t E_355, Double_t sigmat, Double_t sigmax, Double_t sigmay, Double_t intensity,

@@ -46,6 +46,18 @@ void RunManager::ReadCommandFile(const std::string& file_path) {
                                  linewidth_122, sigma_x_122, sigma_y_122,
                                  offset_x_122, offset_y_122, offset_z_122,
                                  yaw_122, pitch_122, roll_122, detuning);
+        } else if (command == "AddLaser122Sigma") {
+            double e, fwhm, pt, lw, sx, sy, ox, oy, oz, yw, pi, rl, det;
+            iss >> e >> fwhm >> pt >> lw >> sx >> sy >> ox >> oy >> oz >> yw >> pi >> rl >> det;
+            lsr_ptr->SetLaser122Sigma(e, fwhm, pt, lw, sx, sy, ox, oy, oz, yw, pi, rl, det);
+        } else if (command == "AddLaser355Sigma") {
+            double e, fwhm, pt, lw, sx, sy, ox, oy, oz, yw, pi, rl;
+            iss >> e >> fwhm >> pt >> lw >> sx >> sy >> ox >> oy >> oz >> yw >> pi >> rl;
+            lsr_ptr->SetLaser355Sigma(e, fwhm, pt, lw, sx, sy, ox, oy, oz, yw, pi, rl);
+        } else if (command == "LaserJitter") {
+            iss >> last_word;
+            lsr_ptr->SetLaserJitter(last_word == "on");
+            std::cout << "-- RunManager: Laser jitter: " << last_word << std::endl;
         } else if (command == "RandomSeed") {
             iss >> rdm_seed;
             rdm_gen.SetSeed(rdm_seed);
@@ -109,6 +121,10 @@ void RunManager::ReadCommandFile(const std::string& file_path) {
                 ROOT_ptr->Setrho_ge_i((last_word == "on"));
             } else if (sub_command == "rho_ion") {
                 ROOT_ptr->Setrho_ion((last_word == "on"));
+            } else if (sub_command == "LaserPars122") {
+                ROOT_ptr->SetLaserPars122((last_word == "on"));
+            } else if (sub_command == "LaserPars355") {
+                ROOT_ptr->SetLaserPars355((last_word == "on"));
             } else {
                 std::cerr << "WARNING RunManager: Unknown branch: " << sub_command << std::endl;
             }
@@ -147,6 +163,8 @@ void RunManager::SolveOBE() {
     for(int i=0; i<eventn; i++){
         if (eventn >= 100 && i % (eventn/100) == 0) loader(i/(eventn/100));
 
+        lsr_ptr->ResampleLaserPars();
+
         solver->SetMuPosition(Mu_ptr->GetInputLocation(i));
         solver->SetMuVelocity(Mu_ptr->GetInputVelocity(i));
 
@@ -162,6 +180,37 @@ void RunManager::SolveOBE() {
         ROOT_ptr->SetPosition(solver->GetMuPosition());
         ROOT_ptr->SetVelocity(solver->GetMuVelocity());
         ROOT_ptr->SetLastState();
+
+        // RootOutput LaserPars122/355 only supports a single laser per wavelength (the common case).
+        // Fail loudly rather than silently dropping data if the macro configured more than one.
+        if (ROOT_ptr->IsLaserPars122On()) {
+            const auto &lasers122 = lsr_ptr->GetLaser122Vec();
+            if (lasers122.size() > 1)
+                throw std::runtime_error("RunManager::SolveOBE: RootOutput LaserPars122 does not support multiple "
+                                         "122nm lasers (found " + std::to_string(lasers122.size()) + ")");
+            if (!lasers122.empty()) {
+                const auto &lsr = lasers122.front();
+                ROOT_ptr->SetLaser122Snapshot(lsr.energy, lsr.linewidth, lsr.peak_time,
+                                              lsr.sigma_x, lsr.sigma_y, lsr.tau,
+                                              lsr.laser_offset.X(), lsr.laser_offset.Y(), lsr.laser_offset.Z(),
+                                              lsr.yaw * 180 / TMath::Pi(), lsr.pitch * 180 / TMath::Pi(),
+                                              lsr.roll * 180 / TMath::Pi(), lsr.detuning);
+            }
+        }
+        if (ROOT_ptr->IsLaserPars355On()) {
+            const auto &lasers355 = lsr_ptr->GetLaser355Vec();
+            if (lasers355.size() > 1)
+                throw std::runtime_error("RunManager::SolveOBE: RootOutput LaserPars355 does not support multiple "
+                                         "355nm lasers (found " + std::to_string(lasers355.size()) + ")");
+            if (!lasers355.empty()) {
+                const auto &lsr = lasers355.front();
+                ROOT_ptr->SetLaser355Snapshot(lsr.energy, lsr.linewidth, lsr.peak_time,
+                                              lsr.sigma_x, lsr.sigma_y, lsr.tau,
+                                              lsr.laser_offset.X(), lsr.laser_offset.Y(), lsr.laser_offset.Z(),
+                                              lsr.yaw * 180 / TMath::Pi(), lsr.pitch * 180 / TMath::Pi(),
+                                              lsr.roll * 180 / TMath::Pi());
+            }
+        }
 
         ROOT_ptr->FillEvent();
     }

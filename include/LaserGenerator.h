@@ -32,6 +32,24 @@ public:
         TVector3 laser_dirc;
     };
 
+    // Standard deviations for per-event Gaussian randomization of a Laser's parameters.
+    // A field left at 0 (the default) keeps that parameter fixed at its nominal value.
+    struct LaserSigma {
+        Double_t energy = 0;        // in J
+        Double_t linewidth = 0;     // in GHz
+        Double_t peak_time = 0;     // in ns
+        Double_t sigma_x = 0;       // in mm
+        Double_t sigma_y = 0;       // in mm
+        Double_t tau = 0;           // in ns (= 0.4247 * pulse_FWHM sigma)
+        Double_t offset_x = 0;      // in mm
+        Double_t offset_y = 0;      // in mm
+        Double_t offset_z = 0;      // in mm
+        Double_t yaw = 0;           // in deg
+        Double_t pitch = 0;         // in deg
+        Double_t roll = 0;          // in deg
+        Double_t detuning = 0;      // in GHz, 122nm only
+    };
+
 public:
     // Meyers' Singleton - Get the instance of the class
     static LaserGenerator& GetInstance();
@@ -50,6 +68,23 @@ public:
                      Double_t yaw, Double_t pitch, Double_t roll);
     void SetEnergy(Double_t E){for (auto &itr : vec_laser122) itr.energy=E;};  // in J
     void SetEnergy355(Double_t E){for (auto &itr : vec_laser355) itr.energy=E;};   // in J
+
+    // Set the Gaussian sigma of each parameter for the most-recently-added 122/355nm laser.
+    // Same parameter order/units as AddLaser122/AddLaser355.
+    void SetLaser122Sigma(Double_t energy, Double_t pulse_FWHM, Double_t peak_time,
+                          Double_t linewidth, Double_t sigma_x, Double_t sigma_y,
+                          Double_t offset_x, Double_t offset_y, Double_t offset_z,
+                          Double_t yaw, Double_t pitch, Double_t roll, Double_t detuning);
+    void SetLaser355Sigma(Double_t energy, Double_t pulse_FWHM, Double_t peak_time,
+                          Double_t linewidth, Double_t sigma_x, Double_t sigma_y,
+                          Double_t offset_x, Double_t offset_y, Double_t offset_z,
+                          Double_t yaw, Double_t pitch, Double_t roll);
+
+    void SetLaserJitter(bool flag){jitter_on=flag;};
+
+    // Resample every laser's parameters from its nominal value + sigma via a Gaussian draw.
+    // No-op unless jitter_on is set. Must be called once per event, before SetMuPosition/PrecomputeAtPosition.
+    void ResampleLaserPars();
 //    void SetLinewidth(Double_t l){linewidth=l;};    // in GHz
 //    void SetSigmaX(Double_t x){sigma_x=x;}; // in mm
 //    void SetSigmaY(Double_t y){sigma_y=y;}; // in mm
@@ -109,6 +144,10 @@ public:
     Double_t GetIntensity(TVector3 r, Double_t t);    // in W/cm^2
     Double_t GetIntensity355(TVector3 r, Double_t t);    // in W/cm^2
 
+    // Live per-event laser parameter vectors (post-resampling if laser jitter is on).
+    const std::vector<Laser>& GetLaser122Vec() const {return vec_laser122;};
+    const std::vector<Laser>& GetLaser355Vec() const {return vec_laser355;};
+
 private:
     // Private constructor and destructor
     LaserGenerator();
@@ -127,6 +166,17 @@ private:
     OBEsolver *obe_ptr;
 
     std::vector<Laser> vec_laser122, vec_laser355;
+
+    // Nominal (mean) values snapshotted at AddLaser122/355 time, and per-laser Gaussian sigmas
+    // (default zero, set via SetLaser122Sigma/SetLaser355Sigma). ResampleLaserPars() draws
+    // vec_laser122/355 from these each event when jitter_on is set.
+    std::vector<Laser> vec_laser122_nominal, vec_laser355_nominal;
+    std::vector<LaserSigma> vec_laser122_sigma, vec_laser355_sigma;
+    bool jitter_on = false;
+
+    // Redraw one Laser's fields from nominal/sigma via RunManager's shared RNG, enforcing
+    // physical validity (sigma_x/sigma_y/tau > 0, energy/linewidth >= 0) with bounded retries.
+    void ResampleOneLaser(Laser &live, const Laser &nominal, const LaserSigma &sigma, bool has_detuning);
 
 //    Double_t energy;
 //    Double_t energy_355;

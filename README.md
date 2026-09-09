@@ -127,11 +127,25 @@ Multiple `AddLaser122` and `AddLaser355` commands can be used to add several las
 | `yaw/pitch/roll` | Beam direction Euler angles (x-y-z order) in degrees |
 | `detuning` | Frequency detuning from resonance in GHz (122 nm only) |
 
+### Laser Parameter Jitter (shot-to-shot fluctuation)
+
+Any laser parameter can optionally be resampled every event from a Gaussian distribution instead of staying fixed, to model realistic shot-to-shot laser fluctuation:
+
+```
+AddLaser122Sigma <same 13 params as AddLaser122, as Gaussian σ>
+AddLaser355Sigma <same 12 params as AddLaser355, as Gaussian σ>
+
+LaserJitter on | off    # default off; when on, resample every laser parameter each event
+                        # from N(macro value, σ), using the RandomSeed RNG
+```
+
+`AddLaser122Sigma`/`AddLaser355Sigma` set the standard deviation for the *most-recently-added* laser of that wavelength, in the same order/units as `AddLaser122`/`AddLaser355`. A parameter left at σ=0 (the default) stays exactly fixed at its macro value every event, even when `LaserJitter` is on. `LaserJitter` defaults to `off`, so existing macros that never call it behave exactly as before (bit-identical output).
+
 ### Simulation Control
 
 ```
 SetRunTime      <duration[ns]>      # Total simulation time window
-RandomSeed      <integer>           # RNG seed for reproducibility
+RandomSeed      <integer>           # RNG seed for reproducibility (also drives LaserJitter)
 EventN          <N> | max           # Number of muonium events to simulate
 SetDopplerShift <shift[rad/ns]>     # Fix Doppler shift to a constant value (overrides v·k)
 ```
@@ -160,8 +174,13 @@ RootOutput  rho_ge_r     on | off   # Coherence (real part)
 RootOutput  rho_ge_i     on | off   # Coherence (imaginary part)
 RootOutput  rho_ion      on | off   # Ionized state population
 
+RootOutput  LaserPars122 on | off   # Record the realized (nominal or jittered) 122nm laser parameters per event
+RootOutput  LaserPars355 on | off   # Record the realized (nominal or jittered) 355nm laser parameters per event
+
 OutputFile  <path/to/output.root>
 ```
+
+`LaserPars122`/`LaserPars355` default to `off`. Each supports only a single laser of that wavelength — the simulation throws if more than one `AddLaser122`/`AddLaser355` is configured while the corresponding output is on.
 
 ### Example Macro
 
@@ -181,6 +200,16 @@ RootOutput  t         on
 RootOutput  rho_ion   on
 
 OutputFile  data/output.root
+```
+
+A version with shot-to-shot laser jitter enabled (see `run/ioni_test_jitter.mac` for the full example):
+
+```
+AddLaser122       13.5e-6  2  5  80  4  1  0  0  2  0  0  0  0
+AddLaser122Sigma  1.35e-6  0  0.2  0  0.2  0.05  0  0  0  0  0  0  0   # 10% energy, 5% beam-size, 0.2ns timing jitter
+LaserJitter       on
+
+RootOutput  LaserPars122  on   # record the realized energy/sigma_x/sigma_y/... per event
 ```
 
 ---
@@ -226,6 +255,22 @@ The output ROOT file contains a TTree named `obe` with one entry per simulated m
 | `LastRho_ion` | `Double_t` | Ionized state population at end of simulation |
 | `IfIonized` | `Int_t` | Ionization flag (1 = ionized, 0 = not) |
 | `IoniTime` | `Double_t` | MC-sampled ionization time [ns]; -1 if not ionized |
+
+**Per-event laser parameter snapshot (present only if `RootOutput LaserPars122`/`LaserPars355 on`):**
+
+The realized value of each laser parameter for that event — equal to the macro's nominal value every event unless `LaserJitter on` is set, in which case it reflects that event's Gaussian-sampled draw. `Laser122_*` has 13 branches (adds `Laser122_Detuning`), `Laser355_*` has the same 12 without detuning:
+
+| Branch | Type | Description |
+|---|---|---|
+| `Laser122_Energy` / `Laser355_Energy` | `Double_t` | Pulse energy [J] |
+| `Laser122_Linewidth` / `Laser355_Linewidth` | `Double_t` | Linewidth [GHz] |
+| `Laser122_PeakTime` / `Laser355_PeakTime` | `Double_t` | Peak time [ns] |
+| `Laser122_SigmaX` / `Laser355_SigmaX` | `Double_t` | Beam radius σx [mm] |
+| `Laser122_SigmaY` / `Laser355_SigmaY` | `Double_t` | Beam radius σy [mm] |
+| `Laser122_Tau` / `Laser355_Tau` | `Double_t` | Pulse time constant (0.4247×FWHM) [ns] |
+| `Laser122_OffsetX/Y/Z` / `Laser355_OffsetX/Y/Z` | `Double_t` | Beam center offset [mm] |
+| `Laser122_Yaw/Pitch/Roll` / `Laser355_Yaw/Pitch/Roll` | `Double_t` | Beam orientation Euler angles [deg] |
+| `Laser122_Detuning` | `Double_t` | Frequency detuning [GHz] (122 nm only) |
 
 **Per-timestep arrays (present only if enabled via `RootOutput`):**
 
@@ -314,10 +359,22 @@ Integration uses an adaptive Runge–Kutta Cash–Karp (4/5) stepper from Boost 
 
 - **Doppler shift**: computed using only the first 122 nm laser's wave vector. If multiple 122 nm lasers are configured, the Doppler contributions from lasers 2, 3, … are ignored. The 355 nm laser's Doppler effect is always ignored.
 - **OBE approximation**: the rotating wave approximation (RWA) is assumed throughout.
+- **`RootOutput LaserPars122`/`LaserPars355`**: only supports a single laser of that wavelength; the simulation throws if more than one `AddLaser122`/`AddLaser355` is configured while that output is enabled.
 
 ---
 
 ## Version History
+
+### v6
+Add per-event Gaussian jitter of laser parameters, to model shot-to-shot laser fluctuation:
+```
+AddLaser122Sigma  <same 13 params as AddLaser122, as Gaussian σ>
+AddLaser355Sigma  <same 12 params as AddLaser355, as Gaussian σ>
+LaserJitter       on | off    # default off
+```
+Add `RootOutput LaserPars122`/`LaserPars355 on | off` to record each event's realized laser parameters (`Laser122_Energy`, `Laser122_SigmaX`, ... — see [Output](#output)). Both default off; only a single laser per wavelength is supported.
+Example macro: `run/ioni_test_jitter.mac`.
+Feature is fully opt-in: with `LaserJitter` left off (the default), output is bit-identical to v5.
 
 ### v5
 Refined README with full build instructions, macro reference, output branch documentation, and physics overview.  

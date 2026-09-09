@@ -1,0 +1,56 @@
+# This is a test script for ionization program, demonstrating per-event
+# Gaussian jitter of the laser parameters (shot-to-shot fluctuation).
+# Based on ioni_test.mac.
+
+# AddLaser  pulse_energy pulse_FWHM peak_time linewidth sigma_x sigma_y offset_x offset_y offset_z yaw pitch roll Detuning
+#           J            ns         ns        GHz       mm      mm      mm       mm       mm       deg deg   deg  GHz
+AddLaser122 13.5e-6      2          5         80        4       1       0       0.0         2        0   0     0  0
+AddLaser355 8e-3         2          5         80        4       1       0       0.0         2        0   0     0  #
+
+
+# AddLaser*Sigma sets the Gaussian standard deviation of each parameter above (same order/units).
+# Applies to the most-recently-added laser of that wavelength. A parameter left at sigma=0 stays fixed.
+# Here: 10% energy jitter, 5% beam-size jitter, 0.2 ns timing jitter on the 122nm laser;
+# 10% energy jitter on the 355nm laser. Everything else (offsets, angles, linewidth, detuning) is fixed.
+
+#                 E_sigma  FWHM_sigma  t_peak_sigma  linewidth_sigma  sigma_x_sigma  sigma_y_sigma  off_x  off_y  off_z  yaw  pitch  roll  detuning_sigma
+AddLaser122Sigma  1.35e-6  0           0.2           0                0.2            0.05           0      0      0      0    0      0     0
+AddLaser355Sigma  8e-4     0           0             0                0              0              0      0      0      0    0      0
+
+# Turn on per-event Gaussian laser jitter (uses RandomSeed below). Default is off.
+LaserJitter on
+
+# Set simulation end time (in ns)
+SetRunTime 10
+
+# Set doppler shift (in 2pi * GHz)
+# Caution: once set, the doppler shift will be fixed to this value
+# SetDopplerShift 0
+
+# Set input muonium file: position and velocity
+InputMuPar	on
+MuInputFile ../datasets/test1k.dat
+EventN      2930
+
+# Set random seed
+RandomSeed 999
+
+# Turn off long array to save space
+RootOutput t on
+RootOutput RabiFreq on
+RootOutput EField on
+RootOutput Intensity122 on
+RootOutput Intensity355 on
+RootOutput GammaIon on
+RootOutput rho_gg on
+RootOutput rho_ee on
+RootOutput rho_ge_r on
+RootOutput rho_ge_i on
+RootOutput rho_ion on
+
+# Record the realized (jittered) per-event laser parameters
+RootOutput LaserPars122 on
+RootOutput LaserPars355 on
+
+OutputFile data/g2edmIoni_test_jitter.root
+

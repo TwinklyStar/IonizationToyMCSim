@@ -4,6 +4,7 @@
 
 #include "LaserGenerator.h"
 #include "OBEsolver.h"
+#include "RunManager.h"
 
 // Meyers' Singleton implementation
 LaserGenerator& LaserGenerator::GetInstance() {
@@ -237,6 +238,8 @@ void LaserGenerator::AddLaser122(Double_t energy, Double_t pulse_FWHM, Double_t 
     cout << oss.str();
 
     vec_laser122.push_back(lsr_tmp);
+    vec_laser122_nominal.push_back(lsr_tmp);
+    vec_laser122_sigma.emplace_back();
 }
 
 void LaserGenerator::AddLaser355(Double_t energy, Double_t pulse_FWHM, Double_t peak_time, Double_t linewidth,
@@ -284,4 +287,112 @@ void LaserGenerator::AddLaser355(Double_t energy, Double_t pulse_FWHM, Double_t 
     cout << oss.str();
 
     vec_laser355.push_back(lsr_tmp);
+    vec_laser355_nominal.push_back(lsr_tmp);
+    vec_laser355_sigma.emplace_back();
+}
+
+void LaserGenerator::SetLaser122Sigma(Double_t energy, Double_t pulse_FWHM, Double_t peak_time,
+                                      Double_t linewidth, Double_t sigma_x, Double_t sigma_y,
+                                      Double_t offset_x, Double_t offset_y, Double_t offset_z,
+                                      Double_t yaw, Double_t pitch, Double_t roll, Double_t detuning) {
+    if (vec_laser122_sigma.empty())
+        throw std::runtime_error("LaserGenerator::SetLaser122Sigma: no 122nm laser added yet — call AddLaser122 first");
+
+    LaserSigma &sig = vec_laser122_sigma.back();
+    sig.energy = energy;
+    sig.linewidth = linewidth;
+    sig.peak_time = peak_time;
+    sig.sigma_x = sigma_x;
+    sig.sigma_y = sigma_y;
+    sig.tau = 0.4247 * pulse_FWHM;
+    sig.offset_x = offset_x;
+    sig.offset_y = offset_y;
+    sig.offset_z = offset_z;
+    sig.yaw = yaw;
+    sig.pitch = pitch;
+    sig.roll = roll;
+    sig.detuning = detuning;
+
+    std::cout << "-- LaserGenerator: Set sigma for the last 122nm laser (energy=" << energy
+              << " J, FWHM=" << pulse_FWHM << " ns, peak_time=" << peak_time << " ns, linewidth=" << linewidth
+              << " GHz, sigma_x=" << sigma_x << " mm, sigma_y=" << sigma_y << " mm, offset=(" << offset_x
+              << ", " << offset_y << ", " << offset_z << ") mm, yaw=" << yaw << " deg, pitch=" << pitch
+              << " deg, roll=" << roll << " deg, detuning=" << detuning << " GHz)" << std::endl;
+}
+
+void LaserGenerator::SetLaser355Sigma(Double_t energy, Double_t pulse_FWHM, Double_t peak_time,
+                                      Double_t linewidth, Double_t sigma_x, Double_t sigma_y,
+                                      Double_t offset_x, Double_t offset_y, Double_t offset_z,
+                                      Double_t yaw, Double_t pitch, Double_t roll) {
+    if (vec_laser355_sigma.empty())
+        throw std::runtime_error("LaserGenerator::SetLaser355Sigma: no 355nm laser added yet — call AddLaser355 first");
+
+    LaserSigma &sig = vec_laser355_sigma.back();
+    sig.energy = energy;
+    sig.linewidth = linewidth;
+    sig.peak_time = peak_time;
+    sig.sigma_x = sigma_x;
+    sig.sigma_y = sigma_y;
+    sig.tau = 0.4247 * pulse_FWHM;
+    sig.offset_x = offset_x;
+    sig.offset_y = offset_y;
+    sig.offset_z = offset_z;
+    sig.yaw = yaw;
+    sig.pitch = pitch;
+    sig.roll = roll;
+
+    std::cout << "-- LaserGenerator: Set sigma for the last 355nm laser (energy=" << energy
+              << " J, FWHM=" << pulse_FWHM << " ns, peak_time=" << peak_time << " ns, linewidth=" << linewidth
+              << " GHz, sigma_x=" << sigma_x << " mm, sigma_y=" << sigma_y << " mm, offset=(" << offset_x
+              << ", " << offset_y << ", " << offset_z << ") mm, yaw=" << yaw << " deg, pitch=" << pitch
+              << " deg, roll=" << roll << " deg)" << std::endl;
+}
+
+void LaserGenerator::ResampleOneLaser(Laser &live, const Laser &nominal, const LaserSigma &sigma, bool has_detuning) {
+    RunManager &RM = RunManager::GetInstance();
+    const int kMaxRetries = 1000;
+
+    auto sampleNonNegative = [&](Double_t mean, Double_t sd, const char *name) {
+        Double_t v = RM.rdm_gen.Gaus(mean, sd);
+        for (int attempt = 0; v < 0 && attempt < kMaxRetries; ++attempt) v = RM.rdm_gen.Gaus(mean, sd);
+        if (v < 0)
+            throw std::runtime_error(std::string("LaserGenerator::ResampleOneLaser: could not sample a non-negative ") +
+                                     name + " (mean=" + std::to_string(mean) + ", sigma=" + std::to_string(sd) +
+                                     ") after " + std::to_string(kMaxRetries) + " retries — check the configured sigma");
+        return v;
+    };
+    auto samplePositive = [&](Double_t mean, Double_t sd, const char *name) {
+        Double_t v = RM.rdm_gen.Gaus(mean, sd);
+        for (int attempt = 0; v <= 0 && attempt < kMaxRetries; ++attempt) v = RM.rdm_gen.Gaus(mean, sd);
+        if (v <= 0)
+            throw std::runtime_error(std::string("LaserGenerator::ResampleOneLaser: could not sample a positive ") +
+                                     name + " (mean=" + std::to_string(mean) + ", sigma=" + std::to_string(sd) +
+                                     ") after " + std::to_string(kMaxRetries) + " retries — check the configured sigma");
+        return v;
+    };
+
+    live.energy = sampleNonNegative(nominal.energy, sigma.energy, "energy");
+    live.linewidth = sampleNonNegative(nominal.linewidth, sigma.linewidth, "linewidth");
+    live.peak_time = RM.rdm_gen.Gaus(nominal.peak_time, sigma.peak_time);
+    live.sigma_x = samplePositive(nominal.sigma_x, sigma.sigma_x, "sigma_x");
+    live.sigma_y = samplePositive(nominal.sigma_y, sigma.sigma_y, "sigma_y");
+    live.tau = samplePositive(nominal.tau, sigma.tau, "tau");
+    live.laser_offset = {RM.rdm_gen.Gaus(nominal.laser_offset.X(), sigma.offset_x),
+                         RM.rdm_gen.Gaus(nominal.laser_offset.Y(), sigma.offset_y),
+                         RM.rdm_gen.Gaus(nominal.laser_offset.Z(), sigma.offset_z)};
+    live.yaw = RM.rdm_gen.Gaus(nominal.yaw, sigma.yaw * TMath::Pi() / 180);
+    live.pitch = RM.rdm_gen.Gaus(nominal.pitch, sigma.pitch * TMath::Pi() / 180);
+    live.roll = RM.rdm_gen.Gaus(nominal.roll, sigma.roll * TMath::Pi() / 180);
+    if (has_detuning) live.detuning = RM.rdm_gen.Gaus(nominal.detuning, sigma.detuning);
+
+    UpdateRotMat(live);
+}
+
+void LaserGenerator::ResampleLaserPars() {
+    if (!jitter_on) return;
+
+    for (size_t i = 0; i < vec_laser122.size(); ++i)
+        ResampleOneLaser(vec_laser122[i], vec_laser122_nominal[i], vec_laser122_sigma[i], /*has_detuning=*/true);
+    for (size_t i = 0; i < vec_laser355.size(); ++i)
+        ResampleOneLaser(vec_laser355[i], vec_laser355_nominal[i], vec_laser355_sigma[i], /*has_detuning=*/false);
 }
