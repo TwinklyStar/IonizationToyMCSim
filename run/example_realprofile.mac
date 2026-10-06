@@ -1,0 +1,60 @@
+# Example macro: 122 nm and 355 nm lasers with MEASURED transverse profiles.
+#
+# Each laser's transverse shape is read from a ROOT file containing a TH2D
+# "h_profile" (unit-integral density, mm^-2, laser-frame axes), instead of the
+# analytic Gaussian exp(-2(x^2/sigma_x^2 + y^2/sigma_y^2)).
+#
+# Run from run/ (paths below are relative to run/):
+#   cd run && ../cmake-build-debug/IonizationToyMCSim example_realprofile.mac
+#
+# Output: run/data/example_realprofile.root (create run/data first: mkdir -p data)
+# Plot the peak intensity map with:  cd run/ana && root -l 'draw_peakI_map.C("../data/example_realprofile.root")'
+# (use a dense-grid run for a smooth map -- see README "Peak Intensity Map")
+
+# ---------------------------------------------------------------------------
+# Lasers: AddLaser* defines the beam, SetLaser*Profile swaps its transverse shape
+# ---------------------------------------------------------------------------
+# AddLaser122  <E[J]> <FWHM[ns]> <t_peak[ns]> <linewidth[GHz]> <sigma_x[mm]> <sigma_y[mm]>
+#              <off_x[mm]> <off_y[mm]> <off_z[mm]> <yaw[deg]> <pitch[deg]> <roll[deg]> <detuning[GHz]>
+#
+# SetLaser122Profile applies to the most-recently-added 122 nm laser.
+# sigma_x / sigma_y above are IGNORED once a profile is loaded (a warning is printed).
+# Energy, FWHM, t_peak, offsets, angles and detuning keep their meaning.
+AddLaser122  13.5e-6  2  5  80  4  1  0  0  2  0  0  0  0
+SetLaser122Profile  ../datasets/122_profile_test.root
+
+# AddLaser355  <E[J]> <FWHM[ns]> <t_peak[ns]> <linewidth[GHz]> <sigma_x> <sigma_y>
+#              <off_x> <off_y> <off_z> <yaw> <pitch> <roll>      (no detuning for 355 nm)
+#
+# The offset_y / offset_z of the 355 nm laser sets its position relative to the 122 nm
+# beam. The measured relative shift is  centroid_camera_mm(122) - centroid_camera_mm(355)
+# (helper: FromClaude/realprofile_validation/relative_offset.py). For the shipped test
+# profiles that is offset_y += 0.457 mm and offset_z += 0.198 mm, i.e. off_y = 0.457 and
+# off_z = 2 + 0.198 = 2.198 (the 122 nm beam sits at off_z = 2). To ignore the measured
+# shift and put the 355 nm beam at the 122 nm nominal position, use 0 and 2 instead.
+AddLaser355  8e-3  2  5  80  4  1  0  0.457  2.198  0  0  0
+SetLaser355Profile  ../datasets/355_profile_test.root
+
+# ---------------------------------------------------------------------------
+# Run control
+# ---------------------------------------------------------------------------
+SetRunTime  10          # simulation window [ns]
+RandomSeed  999         # RNG seed (also drives the ionization decision per event)
+
+# ---------------------------------------------------------------------------
+# Muonium sample: one event per line in the input file (x y z vx vy vz)
+# ---------------------------------------------------------------------------
+InputMuPar   on
+MuInputFile  ../datasets/test1k.dat
+EventN       200        # first 200 events of test1k.dat (use max for all)
+
+# ---------------------------------------------------------------------------
+# Output: the per-event branches (PeakIntensity122/355, LastRho_ion, IfIonized, ...)
+# are always written. Per-step arrays are optional and can be switched off to save space.
+# ---------------------------------------------------------------------------
+RootOutput  t          on
+RootOutput  Intensity122 on
+RootOutput  Intensity355 on
+RootOutput  rho_ion    on
+
+OutputFile  data/example_realprofile.root

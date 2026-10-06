@@ -8,6 +8,9 @@
 !/run/ana/example_analysis.C
 !/run/ioni_test.mac
 !/run/ioni_test_jitter.mac
+!/run/example_realprofile.mac
 /datasets/*
 !/datasets/test1k.dat
+!/datasets/122_profile_test.root
+!/datasets/355_profile_test.root
 /build
