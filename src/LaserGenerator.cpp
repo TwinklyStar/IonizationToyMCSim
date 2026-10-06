@@ -48,6 +48,11 @@ Double_t LaserGenerator::GetPeakIntensity(TVector3 r) {
         Double_t x = laser_r.X();
         Double_t y = laser_r.Y();
 
+        if (lsr.profile) {
+            sum_I += (lsr.energy / (sqrt(2.0 * TMath::Pi()) * lsr.tau * 1e-9))
+                     * SampleProfileDensity(lsr.profile.get(), x, y) * 100;
+            continue;
+        }
         double prefactor =
                 (2.0 * lsr.energy) / (sqrt(2.0 * TMath::Pi()) * TMath::Pi() * lsr.sigma_x * lsr.sigma_y * lsr.tau * 1e-9);
         double exp_space = exp(-2.0 * (x * x) / (lsr.sigma_x * lsr.sigma_x) - 2.0 * (y * y) / (lsr.sigma_y * lsr.sigma_y));
@@ -63,6 +68,11 @@ Double_t LaserGenerator::GetPeakIntensity355(TVector3 r) {
         Double_t x = laser_r.X();
         Double_t y = laser_r.Y();
 
+        if (lsr.profile) {
+            sum_I += (lsr.energy / (sqrt(2.0 * TMath::Pi()) * lsr.tau * 1e-9))
+                     * SampleProfileDensity(lsr.profile.get(), x, y) * 100;
+            continue;
+        }
         double prefactor =
                 (2.0 * lsr.energy) / (sqrt(2.0 * TMath::Pi()) * TMath::Pi() * lsr.sigma_x * lsr.sigma_y * lsr.tau * 1e-9);
         double exp_space = exp(-2.0 * (x * x) / (lsr.sigma_x * lsr.sigma_x) - 2.0 * (y * y) / (lsr.sigma_y * lsr.sigma_y));
@@ -111,6 +121,18 @@ void LaserGenerator::PrecomputeAtPosition(TVector3 r) {
         const Laser& lsr = vec_laser122[i];
         TVector3 lr = BeamToLaserCoord(r, lsr);
         double x = lr.X(), y = lr.Y();
+        if (lsr.profile) {
+            // Measured transverse density h(x,y) [mm^-2] replaces the analytic Gaussian.
+            // pre_I * exp_s_I  ==  [E / (sqrt(2*pi) * tau[s])] * h_analytic(x,y), so the
+            // normalized measured h drops straight in and sigma_x/sigma_y no longer enter.
+            double hval = SampleProfileDensity(lsr.profile.get(), x, y);
+            double Ispatial = (lsr.energy / (sqrt(2.0 * TMath::Pi()) * lsr.tau * 1e-9)) * hval;
+            cached_Ispatial_122[i] = Ispatial;
+            // Analytic path keeps cached_Espatial_122^2 / cached_Ispatial_122 == 2*eta exactly;
+            // reuse that identity so the E-field stays consistent with the intensity.
+            cached_Espatial_122[i] = sqrt(2.0 * eta * Ispatial);
+            continue;
+        }
         double sx2 = lsr.sigma_x * lsr.sigma_x;
         double sy2 = lsr.sigma_y * lsr.sigma_y;
         // E-field: exp(-(x²/σx² + y²/σy²))
@@ -128,6 +150,11 @@ void LaserGenerator::PrecomputeAtPosition(TVector3 r) {
         const Laser& lsr = vec_laser355[i];
         TVector3 lr = BeamToLaserCoord(r, lsr);
         double x = lr.X(), y = lr.Y();
+        if (lsr.profile) {
+            double hval = SampleProfileDensity(lsr.profile.get(), x, y);
+            cached_Ispatial_355[i] = (lsr.energy / (sqrt(2.0 * TMath::Pi()) * lsr.tau * 1e-9)) * hval;
+            continue;
+        }
         double sx2 = lsr.sigma_x * lsr.sigma_x;
         double sy2 = lsr.sigma_y * lsr.sigma_y;
         double exp_s = exp(-(x*x)/sx2 - (y*y)/sy2);
@@ -348,6 +375,60 @@ void LaserGenerator::SetLaser355Sigma(Double_t energy, Double_t pulse_FWHM, Doub
               << " deg, roll=" << roll << " deg)" << std::endl;
 }
 
+void LaserGenerator::LoadProfileInto(std::vector<Laser> &live, std::vector<Laser> &nominal,
+                                    const std::string &path, const char *tag) {
+    if (live.empty())
+        throw std::runtime_error(std::string("LaserGenerator::SetLaser") + tag +
+                                 "Profile: no " + tag + " laser added yet — call AddLaser" + tag + " first");
+
+    TFile f(path.c_str(), "READ");
+    if (f.IsZombie())
+        throw std::runtime_error(std::string("LaserGenerator::LoadProfileInto: cannot open profile file \"") +
+                                 path + "\"");
+    auto *src = dynamic_cast<TH2D *>(f.Get("h_profile"));
+    if (!src)
+        throw std::runtime_error(std::string("LaserGenerator::LoadProfileInto: no TH2D named \"h_profile\" in \"") +
+                                 path + "\"");
+
+    std::shared_ptr<TH2D> h(static_cast<TH2D *>(src->Clone()));
+    h->SetDirectory(nullptr);
+    f.Close();
+
+    live.back().profile = h;
+    nominal.back().profile = h;   // shared ownership; jitter keeps the same lookup
+
+    const TAxis *ax = h->GetXaxis();
+    const TAxis *ay = h->GetYaxis();
+    std::cout << "-- LaserGenerator: Loaded real transverse profile for the last " << tag << " laser\n"
+              << "     file:      " << path << "\n"
+              << "     bins:      " << h->GetNbinsX() << " x " << h->GetNbinsY() << "\n"
+              << "     x range:   [" << ax->GetXmin() << ", " << ax->GetXmax() << "] mm (sigma_x direction)\n"
+              << "     y range:   [" << ay->GetXmin() << ", " << ay->GetXmax() << "] mm (sigma_y direction)\n"
+              << "     integral:  " << h->Integral("width") << " (should be ~1)" << std::endl;
+    if (live.back().sigma_x != 0 || live.back().sigma_y != 0)
+        std::cout << "   WARNING LaserGenerator: sigma_x/sigma_y are ignored for a " << tag
+                  << " laser with a real profile" << std::endl;
+}
+
+Double_t LaserGenerator::SampleProfileDensity(const TH2D *h, Double_t x, Double_t y) const {
+    const TAxis *ax = h->GetXaxis();
+    const TAxis *ay = h->GetYaxis();
+    // Stay strictly inside the outermost bin centres: TH2::Interpolate needs a
+    // surrounding 2x2 block of bin centres and otherwise prints an Error and returns 0.
+    if (x <= ax->GetBinCenter(1) || x >= ax->GetBinCenter(ax->GetNbins()) ||
+        y <= ay->GetBinCenter(1) || y >= ay->GetBinCenter(ay->GetNbins()))
+        return 0.0;
+    return h->Interpolate(x, y);
+}
+
+void LaserGenerator::SetLaser122Profile(const std::string &path) {
+    LoadProfileInto(vec_laser122, vec_laser122_nominal, path, "122");
+}
+
+void LaserGenerator::SetLaser355Profile(const std::string &path) {
+    LoadProfileInto(vec_laser355, vec_laser355_nominal, path, "355");
+}
+
 void LaserGenerator::ResampleOneLaser(Laser &live, const Laser &nominal, const LaserSigma &sigma, bool has_detuning) {
     RunManager &RM = RunManager::GetInstance();
     const int kMaxRetries = 1000;
@@ -374,8 +455,12 @@ void LaserGenerator::ResampleOneLaser(Laser &live, const Laser &nominal, const L
     live.energy = sampleNonNegative(nominal.energy, sigma.energy, "energy");
     live.linewidth = sampleNonNegative(nominal.linewidth, sigma.linewidth, "linewidth");
     live.peak_time = RM.rdm_gen.Gaus(nominal.peak_time, sigma.peak_time);
-    live.sigma_x = samplePositive(nominal.sigma_x, sigma.sigma_x, "sigma_x");
-    live.sigma_y = samplePositive(nominal.sigma_y, sigma.sigma_y, "sigma_y");
+    // sigma_x/sigma_y are unused when a real profile is loaded — skip them so a
+    // 0 placeholder in the macro does not trip samplePositive's retry/throw.
+    if (!live.profile) {
+        live.sigma_x = samplePositive(nominal.sigma_x, sigma.sigma_x, "sigma_x");
+        live.sigma_y = samplePositive(nominal.sigma_y, sigma.sigma_y, "sigma_y");
+    }
     live.tau = samplePositive(nominal.tau, sigma.tau, "tau");
     live.laser_offset = {RM.rdm_gen.Gaus(nominal.laser_offset.X(), sigma.offset_x),
                          RM.rdm_gen.Gaus(nominal.laser_offset.Y(), sigma.offset_y),

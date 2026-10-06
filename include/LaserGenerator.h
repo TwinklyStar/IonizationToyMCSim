@@ -5,6 +5,8 @@
 #ifndef LASERTOYMC_LASERGENERATOR_H
 #define LASERTOYMC_LASERGENERATOR_H
 #include "common.h"
+#include <memory>
+#include "TH2D.h"
 
 class OBEsolver;    // Two classes cannot include each other
 
@@ -30,6 +32,12 @@ public:
         Double_t detuning;
         Double_t laser_k;       // in m^-1
         TVector3 laser_dirc;
+
+        // Measured transverse-intensity density h(x,y) [mm^-2] on the laser frame
+        // (x = sigma_x direction, y = sigma_y direction), centred on its own
+        // centroid and normalized to unit integral. nullptr => analytic Gaussian.
+        // When set, sigma_x/sigma_y are ignored for this laser.
+        std::shared_ptr<TH2D> profile = nullptr;
     };
 
     // Standard deviations for per-event Gaussian randomization of a Laser's parameters.
@@ -79,6 +87,13 @@ public:
                           Double_t linewidth, Double_t sigma_x, Double_t sigma_y,
                           Double_t offset_x, Double_t offset_y, Double_t offset_z,
                           Double_t yaw, Double_t pitch, Double_t roll);
+
+    // Load a measured transverse-intensity profile (TH2D "h_profile", unit integral,
+    // laser-frame axes in mm) for the most-recently-added 122/355 nm laser. Once set,
+    // that laser uses a bilinear lookup into the histogram instead of the analytic
+    // Gaussian, and its sigma_x/sigma_y are ignored.
+    void SetLaser122Profile(const std::string& path);
+    void SetLaser355Profile(const std::string& path);
 
     void SetLaserJitter(bool flag){jitter_on=flag;};
 
@@ -154,6 +169,14 @@ private:
     ~LaserGenerator(){};
 
     TVector3 BeamToLaserCoord(TVector3 r, const Laser& lsr); // Transform from target coordinate to laser coordinate
+
+    // Load "h_profile" from a ROOT file and attach it (shared) to the back() entry of
+    // both the live and nominal laser vectors. tag is "122nm"/"355nm" for messages.
+    void LoadProfileInto(std::vector<Laser>& live, std::vector<Laser>& nominal,
+                         const std::string& path, const char* tag);
+    // Bilinear lookup of the transverse density [mm^-2] at laser-frame (x,y).
+    // Returns 0 outside the histogram's bin-centre range (no light, no ROOT error).
+    Double_t SampleProfileDensity(const TH2D* h, Double_t x, Double_t y) const;
 
     // Per-event cached spatial factors, populated by PrecomputeAtPosition().
     // Each entry is (prefactor * exp_space) for the corresponding laser in the vector.

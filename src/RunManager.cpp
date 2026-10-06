@@ -54,6 +54,14 @@ void RunManager::ReadCommandFile(const std::string& file_path) {
             double e, fwhm, pt, lw, sx, sy, ox, oy, oz, yw, pi, rl;
             iss >> e >> fwhm >> pt >> lw >> sx >> sy >> ox >> oy >> oz >> yw >> pi >> rl;
             lsr_ptr->SetLaser355Sigma(e, fwhm, pt, lw, sx, sy, ox, oy, oz, yw, pi, rl);
+        } else if (command == "SetLaser122Profile") {
+            std::string profile_path;
+            iss >> profile_path;
+            lsr_ptr->SetLaser122Profile(profile_path);
+        } else if (command == "SetLaser355Profile") {
+            std::string profile_path;
+            iss >> profile_path;
+            lsr_ptr->SetLaser355Profile(profile_path);
         } else if (command == "LaserJitter") {
             iss >> last_word;
             lsr_ptr->SetLaserJitter(last_word == "on");
